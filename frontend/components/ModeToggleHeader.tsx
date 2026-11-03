@@ -50,6 +50,17 @@ export const ModeToggleHeader: React.FC<ModeToggleHeaderProps> = ({
   const [hasMetaKey, setHasMetaKey] = useState<boolean>(false);
 
   useEffect(() => {
+    try {
+      const savedMode = localStorage.getItem("omnistore_view_mode") as ViewMode | null;
+      if (savedMode && (savedMode === "merchant" || savedMode === "judge")) {
+        if (savedMode !== viewMode) {
+          onToggleViewMode(savedMode);
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
     const key = getStoredMetaApiKey();
     if (key) {
       setHasMetaKey(true);
@@ -64,11 +75,21 @@ export const ModeToggleHeader: React.FC<ModeToggleHeaderProps> = ({
     }
   }, [backendConnected]);
 
+  const handleModeChange = (mode: ViewMode) => {
+    try {
+      localStorage.setItem("omnistore_view_mode", mode);
+    } catch {}
+    if (mode === "merchant" && activeTab === "architecture") {
+      onSelectTab("demo");
+    }
+    onToggleViewMode(mode);
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#080a0f]/90 backdrop-blur-xl">
         {/* Primary Brand & Mode Navigation Row */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 sm:gap-4">
           {/* Brand identity */}
           <div className="flex items-center space-x-3 min-w-max">
             <div className="relative group">
@@ -85,41 +106,49 @@ export const ModeToggleHeader: React.FC<ModeToggleHeaderProps> = ({
                   <span className="text-emerald-400 font-mono font-normal">AI</span>
                 </span>
 
-                <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-[10px] font-mono text-emerald-300 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span>Build for Your World</span>
-                </span>
+                {viewMode === "judge" && (
+                  <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-purple-950/60 border border-purple-800/60 text-[10px] font-mono text-purple-300 font-medium">
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+                    <span>Build for Your World</span>
+                  </span>
+                )}
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
-                Physical-to-Digital Micro-Commerce Engine · Meta Global AI Hackathon
-              </p>
+              {viewMode === "judge" ? (
+                <p className="text-[11px] text-purple-300/80 font-mono hidden sm:block">
+                  Physical-to-Digital Micro-Commerce Engine · Meta Global AI Hackathon
+                </p>
+              ) : (
+                <p className="text-[11px] text-slate-400 hidden sm:block">
+                  Snap stall photo · Auto-catalog items · Launch WhatsApp store
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Central Dual Mode Switcher (Store Owner vs. Judge / Meta AI Mode) */}
+          {/* Central Dual Mode Switcher (Store Owner vs. Judge Mode) */}
           <div className="flex items-center bg-[#10141d] p-1 rounded-xl border border-white/10 shadow-inner">
             <button
-              onClick={() => onToggleViewMode("merchant")}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              onClick={() => handleModeChange("merchant")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === "merchant"
                   ? "bg-emerald-500 text-slate-950 shadow-md font-bold"
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Store className="w-3.5 h-3.5" />
-              <span>Store Owner View</span>
+              <span>Store Owner</span>
             </button>
 
             <button
-              onClick={() => onToggleViewMode("judge")}
-              className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              onClick={() => handleModeChange("judge")}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 viewMode === "judge"
                   ? "bg-purple-600 text-white shadow-[0_0_18px_rgba(168,85,247,0.4)] font-bold border border-purple-400/40"
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Cpu className="w-3.5 h-3.5" />
-              <span>Judge / Meta AI Mode</span>
+              <span>Judge Mode</span>
             </button>
           </div>
 
@@ -154,57 +183,65 @@ export const ModeToggleHeader: React.FC<ModeToggleHeaderProps> = ({
                 </span>
               </button>
 
-              <button
-                onClick={() => onSelectTab("architecture")}
-                className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                  activeTab === "architecture"
-                    ? "bg-white text-black font-bold shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                <Code2 className="w-3.5 h-3.5" />
-                <span>Engine Specs</span>
-              </button>
+              {/* Engine Specs TAB: Judge Mode ONLY */}
+              {viewMode === "judge" && (
+                <button
+                  onClick={() => onSelectTab("architecture")}
+                  className={`flex items-center space-x-1.5 px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                    activeTab === "architecture"
+                      ? "bg-white text-black font-bold shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <Code2 className="w-3.5 h-3.5" />
+                  <span>Engine Specs</span>
+                </button>
+              )}
             </div>
 
-            {/* Meta AI Key Configuration CTA */}
-            <button
-              onClick={() => setMetaModalOpen(true)}
-              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-mono transition-all group ${
-                hasMetaKey
-                  ? "bg-purple-950/40 border-purple-500/40 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.15)]"
-                  : "bg-[#121622] border-white/10 text-slate-300 hover:border-purple-500/50 hover:text-purple-300"
-              }`}
-              title="Configure Meta Model API Key for SAM 3.1 & Muse Spark"
-            >
-              <Key className="w-3.5 h-3.5 text-purple-400 transition-transform group-hover:rotate-45" />
-              <span className="font-semibold hidden sm:inline">Meta Key</span>
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  hasMetaKey ? "bg-emerald-400 animate-pulse" : "bg-purple-400"
-                }`}
-              />
-            </button>
+            {/* Developer controls ONLY in Judge Mode */}
+            {viewMode === "judge" && (
+              <>
+                {/* Meta AI Key Configuration CTA */}
+                <button
+                  onClick={() => setMetaModalOpen(true)}
+                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-mono transition-all group ${
+                    hasMetaKey
+                      ? "bg-purple-950/40 border-purple-500/40 text-purple-300 hover:bg-purple-900/40 hover:border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.15)]"
+                      : "bg-[#121622] border-white/10 text-slate-300 hover:border-purple-500/50 hover:text-purple-300"
+                  }`}
+                  title="Configure Meta Model API Key for SAM 3.1 & Muse Spark"
+                >
+                  <Key className="w-3.5 h-3.5 text-purple-400 transition-transform group-hover:rotate-45" />
+                  <span className="font-semibold hidden sm:inline">Meta Key</span>
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      hasMetaKey ? "bg-emerald-400 animate-pulse" : "bg-purple-400"
+                    }`}
+                  />
+                </button>
 
-            {/* Interactive Backend Status Indicator Button */}
-            <button
-              onClick={() => setBackendModalOpen(true)}
-              className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-mono transition-all hover:brightness-110 ${
-                backendConnected
-                  ? "bg-emerald-950/40 border-emerald-800/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                  : "bg-amber-950/40 border-amber-800/50 text-amber-300"
-              }`}
-              title="Click to view Backend & API Orchestrator status"
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  backendConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
-                }`}
-              />
-              <span className="hidden sm:inline">
-                {backendConnected ? "API Connected" : "Sandbox"}
-              </span>
-            </button>
+                {/* Interactive Backend Status Indicator Button */}
+                <button
+                  onClick={() => setBackendModalOpen(true)}
+                  className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-mono transition-all hover:brightness-110 ${
+                    backendConnected
+                      ? "bg-emerald-950/40 border-emerald-800/50 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
+                      : "bg-amber-950/40 border-amber-800/50 text-amber-300"
+                  }`}
+                  title="Click to view Backend & API Orchestrator status"
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      backendConnected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                    }`}
+                  />
+                  <span className="hidden sm:inline">
+                    {backendConnected ? "API Connected" : "Sandbox"}
+                  </span>
+                </button>
+              </>
+            )}
           </div>
         </div>
 

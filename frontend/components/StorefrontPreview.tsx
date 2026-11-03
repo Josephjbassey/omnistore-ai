@@ -28,11 +28,13 @@ import { StorefrontSchema, CodeGenerateResponse, resolveStorefrontUrl, getAppUrl
 interface StorefrontPreviewProps {
   storeSchema: StorefrontSchema | null;
   codeResponse: CodeGenerateResponse | null;
+  isJudgeMode?: boolean;
 }
 
 export const StorefrontPreview: React.FC<StorefrontPreviewProps> = ({
   storeSchema,
   codeResponse,
+  isJudgeMode = false,
 }) => {
   const [activeTab, setActiveTab] = useState<"preview" | "code">("preview");
   const [selectedFile, setSelectedFile] = useState<string>("app/page.tsx");
@@ -141,42 +143,57 @@ export const StorefrontPreview: React.FC<StorefrontPreviewProps> = ({
             <Smartphone className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="font-semibold text-xs text-slate-100 uppercase tracking-wider font-mono flex items-center space-x-1.5">
-              <span>Muse Code</span>
-              <span className="text-[10px] text-emerald-400 font-normal lowercase">(synthesized PWA &amp; storefront)</span>
-            </h2>
-            <p className="text-[10px] text-slate-400">
-              Mobile-first web app with direct WhatsApp cart integration
-            </p>
+            {isJudgeMode ? (
+              <>
+                <h2 className="font-semibold text-xs text-slate-100 uppercase tracking-wider font-mono flex items-center space-x-1.5">
+                  <span>Muse Code</span>
+                  <span className="text-[10px] text-emerald-400 font-normal lowercase">(synthesized PWA &amp; storefront)</span>
+                </h2>
+                <p className="text-[10px] text-slate-400">
+                  Mobile-first web app with direct WhatsApp cart integration
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="font-semibold text-xs text-slate-100 flex items-center space-x-1.5">
+                  <span>Live Mobile Storefront</span>
+                </h2>
+                <p className="text-[10px] text-slate-400">
+                  Ready to share with customers on WhatsApp
+                </p>
+              </>
+            )}
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Tab Switcher: Mobile Live View vs. Generated Code */}
-          <div className="flex items-center space-x-1 bg-[#121622] border border-white/10 p-1 rounded-xl shadow-inner">
-            <button
-              onClick={() => setActiveTab("preview")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === "preview"
-                  ? "bg-emerald-500 text-slate-950 shadow-sm font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>Mobile Live View</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("code")}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === "code"
-                  ? "bg-purple-600 text-white shadow-sm font-bold"
-                  : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              <Terminal className="w-3.5 h-3.5" />
-              <span>Generated Code ({Object.keys(files).length || 4})</span>
-            </button>
-          </div>
+          {/* Tab Switcher: Only in Judge Mode */}
+          {isJudgeMode && (
+            <div className="flex items-center space-x-1 bg-[#121622] border border-white/10 p-1 rounded-xl shadow-inner">
+              <button
+                onClick={() => setActiveTab("preview")}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === "preview"
+                    ? "bg-emerald-500 text-slate-950 shadow-sm font-bold"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>Mobile Live View</span>
+              </button>
+              <button
+                onClick={() => setActiveTab("code")}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  activeTab === "code"
+                    ? "bg-purple-600 text-white shadow-sm font-bold"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Generated Code ({Object.keys(files).length || 4})</span>
+              </button>
+            </div>
+          )}
 
           {/* Instant Deploy Action Button with Real URLs */}
           <button

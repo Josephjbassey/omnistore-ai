@@ -10,6 +10,7 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { STALL_PRESETS, StallPreset } from "@/lib/presets";
 import {
   BoundingBox,
+  InventoryItem,
   MerchantContext,
   StorefrontSchema,
   StructuredReasoningOutput,
@@ -50,6 +51,16 @@ export default function Home() {
   const [chatOpen, setChatOpen] = useState<boolean>(false);
   const [activeRole, setActiveRole] = useState<string>("commander");
   const [isGeneratingCode, setIsGeneratingCode] = useState<boolean>(false);
+
+  // Sync viewMode from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("omnistore_view_mode") as ViewMode | null;
+      if (saved === "merchant" || saved === "judge") {
+        setViewMode(saved);
+      }
+    } catch {}
+  }, []);
 
   // Merchant context
   const [merchantContext, setMerchantContext] = useState<MerchantContext>({
@@ -196,6 +207,27 @@ export default function Home() {
     }
   };
 
+  const handleUpdateInventoryItem = (itemId: string, updates: Partial<InventoryItem>) => {
+    if (!storeSchema) return;
+    const updatedInventory = (storeSchema.inventory || []).map((item) => {
+      if (item.item_id === itemId) {
+        return { ...item, ...updates };
+      }
+      return item;
+    });
+    const updatedSchema: StorefrontSchema = {
+      ...storeSchema,
+      inventory: updatedInventory,
+    };
+    setStoreSchema(updatedSchema);
+    if (structuredOutput) {
+      setStructuredOutput({
+        ...structuredOutput,
+        inventory: updatedInventory,
+      });
+    }
+  };
+
   const inventoryThumbnails = React.useMemo(() => {
     const map: Record<string, string> = {};
     (storeSchema?.inventory || []).forEach((item) => {
@@ -257,7 +289,7 @@ export default function Home() {
                 Turn any market stall or kiosk into an online store in seconds.
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-                Built for small market stall merchants and informal traders who operate without barcodes or desktop POS terminals. Meta&apos;s multimodal models isolate products from a photo, calculate fair market pricing in local currency (NGN ₦), and synthesize a mobile store with direct WhatsApp checkout.
+                Built for small market stall merchants and informal traders who operate without barcodes or desktop POS terminals. Our intelligent camera auto-catalogs products from your photo, sets fair market pricing in local currency (NGN ₦), and launches a mobile store with direct WhatsApp checkout.
               </p>
             </div>
 
@@ -361,10 +393,16 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>Physical Stall Photo</span>
-                    <span className="text-[10px] font-mono text-cyan-400">(SAM 3.1)</span>
+                    <span>{viewMode === "judge" ? "Physical Stall Photo" : "1. Snap Stall Photo"}</span>
+                    {viewMode === "judge" ? (
+                      <span className="text-[10px] font-mono text-cyan-400">(SAM 3.1)</span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-emerald-400">Step 1</span>
+                    )}
                   </h3>
-                  <p className="text-[11px] text-slate-400">Isolates physical goods &amp; stock contours</p>
+                  <p className="text-[11px] text-slate-400">
+                    {viewMode === "judge" ? "Isolates physical goods & stock contours" : "Take or upload a picture of your stall shelf"}
+                  </p>
                 </div>
               </div>
 
@@ -374,10 +412,18 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>Cognitive Local Pricing</span>
-                    <span className="text-[10px] font-mono text-amber-400">(Muse Spark)</span>
+                    <span>{viewMode === "judge" ? "Cognitive Local Pricing" : "2. AI Catalogs Items"}</span>
+                    {viewMode === "judge" ? (
+                      <span className="text-[10px] font-mono text-amber-400">(Muse Spark)</span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-amber-400">Step 2</span>
+                    )}
                   </h3>
-                  <p className="text-[11px] text-slate-400">Calculates fair market rates in {merchantContext.currency}</p>
+                  <p className="text-[11px] text-slate-400">
+                    {viewMode === "judge"
+                      ? `Calculates fair market rates in ${merchantContext.currency}`
+                      : `Automatic product catalog & pricing in ${merchantContext.currency}`}
+                  </p>
                 </div>
               </div>
 
@@ -387,10 +433,18 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>1-Click WhatsApp Store</span>
-                    <span className="text-[10px] font-mono text-emerald-400">(Muse Code)</span>
+                    <span>{viewMode === "judge" ? "1-Click WhatsApp Store" : "3. Launch WhatsApp Store"}</span>
+                    {viewMode === "judge" ? (
+                      <span className="text-[10px] font-mono text-emerald-400">(Muse Code)</span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-emerald-400">Step 3</span>
+                    )}
                   </h3>
-                  <p className="text-[11px] text-slate-400">Instant web app + WhatsApp checkout</p>
+                  <p className="text-[11px] text-slate-400">
+                    {viewMode === "judge"
+                      ? "Instant web app + WhatsApp checkout"
+                      : "Share instant order link with WhatsApp customers"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -407,6 +461,7 @@ export default function Home() {
                   selectedBoxId={selectedBox?.box_id}
                   stallImageUrl={activePreset.image_url}
                   inventoryThumbnails={inventoryThumbnails}
+                  viewMode={viewMode}
                 />
               </div>
 
@@ -423,6 +478,7 @@ export default function Home() {
                     if (match) setSelectedBox(match);
                   }}
                   isJudgeMode={viewMode === "judge"}
+                  onUpdateInventoryItem={handleUpdateInventoryItem}
                 />
               </div>
             </div>
@@ -439,7 +495,9 @@ export default function Home() {
                   <span>Live Customer Experience (Smartphone Simulator)</span>
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  This is the exact mobile storefront synthesized by Muse Code. Add products to the cart and tap &quot;Order on WhatsApp&quot; to test the order route.
+                  {viewMode === "judge"
+                    ? 'This is the exact mobile storefront synthesized by Muse Code. Add products to the cart and tap "Order on WhatsApp" to test the order route.'
+                    : 'This is your live mobile storefront. Add products to the cart and tap "Order on WhatsApp" to test customer ordering.'}
                 </p>
               </div>
               <button
@@ -453,6 +511,7 @@ export default function Home() {
             <StorefrontPreview
               storeSchema={storeSchema}
               codeResponse={codeResponse}
+              isJudgeMode={viewMode === "judge"}
             />
           </div>
         )}

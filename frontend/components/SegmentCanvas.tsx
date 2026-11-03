@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Upload,
+  Camera,
   Sparkles,
   MapPin,
   DollarSign,
@@ -24,6 +25,7 @@ import {
   PipelineResponse,
   scanStoreJson,
 } from "@/lib/api";
+import { ViewMode } from "./ModeToggleHeader";
 
 interface SegmentCanvasProps {
   merchantContext: MerchantContext;
@@ -33,6 +35,7 @@ interface SegmentCanvasProps {
   selectedBoxId?: string | null;
   stallImageUrl?: string;
   inventoryThumbnails?: Record<string, string>;
+  viewMode?: ViewMode;
 }
 
 export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
@@ -43,6 +46,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
   selectedBoxId: externalSelectedBoxId,
   stallImageUrl = "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1280&q=80",
   inventoryThumbnails = {},
+  viewMode = "merchant",
 }) => {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [segmentData, setSegmentData] = useState<SegmentResponse | null>(null);
@@ -54,6 +58,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Sync internal selection when external changes
   useEffect(() => {
@@ -128,6 +133,11 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!segmentData) return;
+
+    // In Store Owner Mode: Hide raw bounding box overlays, coordinates, confidence tags; show clean photo preview
+    if (viewMode === "merchant") {
+      return;
+    }
 
     segmentData.bounding_boxes.forEach((box) => {
       const [ymin, xmin, ymax, xmax] = box.bbox;
@@ -288,7 +298,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
       ctx.restore();
     });
-  }, [segmentData, hoveredBoxId, selectedBoxId]);
+  }, [segmentData, hoveredBoxId, selectedBoxId, viewMode]);
 
   return (
     <div className="flex flex-col h-full bg-[#0b0e14] rounded-2xl border border-white/[0.08] p-4 sm:p-5 shadow-2xl backdrop-blur-md">
@@ -371,42 +381,98 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
         </div>
       </div>
 
+      {/* Hidden File and Camera Inputs */}
+      <input
+        type="file"
+        ref={cameraInputRef}
+        onChange={handleFileUpload}
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileUpload}
+        accept="image/*"
+        className="hidden"
+      />
+
       {/* Action / Trigger Bar */}
-      <div className="flex items-center justify-between py-3">
-        <div className="flex items-center space-x-2">
-          <span className="status-dot status-dot-cyan" />
-          <h2 className="font-semibold text-xs text-slate-200 uppercase tracking-wider font-mono flex items-center space-x-1.5">
-            <span>SAM 3.1 Visual Canvas</span>
-            <span className="text-[10px] text-cyan-400 lowercase font-normal">(real stall perception)</span>
-          </h2>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 py-3">
+        {viewMode === "judge" ? (
+          <div className="flex items-center space-x-2">
+            <span className="status-dot status-dot-cyan" />
+            <h2 className="font-semibold text-xs text-slate-200 uppercase tracking-wider font-mono flex items-center space-x-1.5">
+              <span>SAM 3.1 Visual Canvas</span>
+              <span className="text-[10px] text-cyan-400 lowercase font-normal">(real stall perception)</span>
+            </h2>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-2">
+            <Camera className="w-4 h-4 text-emerald-400" />
+            <h2 className="font-semibold text-xs text-slate-100 flex items-center space-x-1.5">
+              <span>Your Stall Photo</span>
+            </h2>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400">
+              1. Snap Stall
+            </span>
+          </div>
+        )}
 
-        <div className="flex items-center space-x-2.5">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept="image/*"
-            className="hidden"
-          />
+        <div className="flex flex-wrap items-center gap-2">
+          {viewMode === "merchant" ? (
+            <>
+              {/* Primary Mobile Camera Snap Trigger */}
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="btn-command-emerald flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-glow-emerald active:scale-95"
+                title="Open device camera to snap stall picture"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>Snap Stall Photo</span>
+              </button>
 
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141924] hover:bg-[#1a2232] text-slate-300 border border-white/10 transition-colors shadow-sm active:scale-95"
-          >
-            <Upload className="w-3.5 h-3.5 text-slate-400" />
-            <span>Upload Photo</span>
-          </button>
+              {/* Upload Picture Fallback */}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141924] hover:bg-[#1a2232] text-slate-300 border border-white/10 transition-colors shadow-sm active:scale-95"
+                title="Select existing photo from gallery"
+              >
+                <Upload className="w-3.5 h-3.5 text-slate-400" />
+                <span>Upload Picture</span>
+              </button>
 
-          {/* Commanding 1-Click Store Scan CTA with radial gradient glow */}
-          <button
-            onClick={() => executeFullScan(customImage || undefined)}
-            disabled={isScanning}
-            className="btn-command-emerald flex items-center space-x-2 px-4 py-1.5 rounded-xl text-xs font-bold shadow-glow-emerald disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
-            <span>{isScanning ? "Extracting Spatial Masks..." : "1-Click Store Scan"}</span>
-          </button>
+              {/* Re-catalog Items CTA */}
+              <button
+                onClick={() => executeFullScan(customImage || undefined)}
+                disabled={isScanning}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#182030] hover:bg-[#202b40] text-emerald-300 border border-emerald-500/30 transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
+                <span>{isScanning ? "Cataloging Items..." : "Catalog Items"}</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141924] hover:bg-[#1a2232] text-slate-300 border border-white/10 transition-colors shadow-sm active:scale-95"
+              >
+                <Upload className="w-3.5 h-3.5 text-slate-400" />
+                <span>Upload Photo</span>
+              </button>
+
+              <button
+                onClick={() => executeFullScan(customImage || undefined)}
+                disabled={isScanning}
+                className="btn-command-emerald flex items-center space-x-2 px-4 py-1.5 rounded-xl text-xs font-bold shadow-glow-emerald disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
+                <span>{isScanning ? "Extracting Spatial Masks..." : "1-Click Store Scan"}</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -427,7 +493,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
         <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#080a0f]/80 to-transparent pointer-events-none z-0" />
         <div className="absolute top-3 left-4 flex items-center space-x-2 z-10 pointer-events-none">
           <span className="px-2.5 py-0.5 rounded-md bg-[#080a0f]/85 border border-white/15 text-[11px] font-mono text-emerald-300 font-semibold backdrop-blur-md">
-            {merchantContext.store_name} · Real Stall Frame #042
+            {merchantContext.store_name} · {viewMode === "judge" ? "Real Stall Frame #042" : "Current Stall View"}
           </span>
         </div>
 
@@ -473,16 +539,25 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       {/* Segment Selector Quick Strip (With Real Product Thumbnails) */}
       {segmentData && segmentData.bounding_boxes.length > 0 && (
         <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center space-x-1.5 text-[11px] font-mono text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Detected:</span>
-            <span className="text-white font-bold">{segmentData.bounding_boxes.length} SKUs</span>
-            <span className="text-slate-500">· click to inspect cognitive reasoning</span>
-          </div>
+          {viewMode === "judge" ? (
+            <div className="flex items-center space-x-1.5 text-[11px] font-mono text-slate-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span>Detected:</span>
+              <span className="text-white font-bold">{segmentData.bounding_boxes.length} SKUs</span>
+              <span className="text-slate-500">· click to inspect cognitive reasoning</span>
+            </div>
+          ) : (
+            <div className="flex items-center space-x-1.5 text-xs text-slate-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="font-semibold text-white">Detected Goods ({segmentData.bounding_boxes.length})</span>
+              <span className="text-slate-500 text-[11px]">· select to view:</span>
+            </div>
+          )}
 
           <div className="flex items-center space-x-1.5 overflow-x-auto py-0.5 no-scrollbar">
             {segmentData.bounding_boxes.map((box) => {
               const thumbUrl = inventoryThumbnails[box.box_id];
+              const isSelected = box.box_id === selectedBoxId;
               return (
                 <button
                   key={box.box_id}
@@ -490,8 +565,8 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
                     setInternalSelectedBoxId(box.box_id);
                     onSelectBox(box);
                   }}
-                  className={`text-[11px] font-mono px-2.5 py-1 rounded-lg border transition-all flex items-center space-x-2 whitespace-nowrap ${
-                    box.box_id === selectedBoxId
+                  className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all flex items-center space-x-2 whitespace-nowrap ${
+                    isSelected
                       ? "bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-sm"
                       : "bg-[#141924] text-slate-300 border-white/10 hover:border-white/25 hover:text-white"
                   }`}
@@ -504,13 +579,15 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
                     />
                   )}
                   <span>{box.label}</span>
-                  <span
-                    className={`text-[10px] ${
-                      box.box_id === selectedBoxId ? "text-slate-900" : "text-emerald-400"
-                    }`}
-                  >
-                    {(box.confidence * 100).toFixed(0)}%
-                  </span>
+                  {viewMode === "judge" && (
+                    <span
+                      className={`text-[10px] font-mono ${
+                        isSelected ? "text-slate-900" : "text-emerald-400"
+                      }`}
+                    >
+                      {(box.confidence * 100).toFixed(0)}%
+                    </span>
+                  )}
                 </button>
               );
             })}

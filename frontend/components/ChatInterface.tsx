@@ -30,7 +30,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     {
       role: "assistant",
       content:
-        "Hello! I am your OmniStore AI Advisor. I can assist with SAM 3.1 visual segmentation, Muse Spark pricing formulas in local currency, or Muse Code storefront code generation. How can I assist your market stall today?",
+        "Hello! I am your OmniStore AI Advisor. I can help you catalog stall goods, calculate fair local market prices, or set up your WhatsApp storefront. How can I assist your business today?",
       agent_role: "commander",
     },
   ]);
@@ -135,9 +135,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   const quickPrompts = [
-    "Run SAM 3.1 visual segmentation on the stall shelves.",
+    "How can I price my stall inventory for fast sales?",
     "Calculate fair Nigerian Naira pricing for white garri and yams.",
-    "Inspect synthesized Next.js 14 WhatsApp checkout route.",
+    "Help me share my store link with local WhatsApp customers.",
     "Recommend marketing strategies for local kiosk customers.",
   ];
 
