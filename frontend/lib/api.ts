@@ -26,7 +26,7 @@ export const getAppUrl = (): string => {
   if (typeof window !== "undefined" && window.location.origin) {
     return window.location.origin;
   }
-  return "http://localhost:3000";
+  return "https://omnistore-sandy.vercel.app";
 };
 
 export const resolveStorefrontUrl = (slugOrUrl?: string): string => {
@@ -54,7 +54,7 @@ export const getStoredMetaApiKey = (): string => {
   if (typeof window !== "undefined") {
     return localStorage.getItem("omnistore_meta_api_key") || "";
   }
-  return process.env.NEXT_PUBLIC_META_MODEL_API_KEY || "";
+  return "";
 };
 
 export const setStoredMetaApiKey = (key: string): void => {
@@ -234,6 +234,7 @@ export interface HealthStatus {
   assistant: string;
   version: string;
   active_providers: Record<string, boolean>;
+  meta_api_configured?: boolean;
 }
 
 // ─── API Client Methods ─────────────────────────────────────────────────────

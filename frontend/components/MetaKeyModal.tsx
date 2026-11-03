@@ -20,6 +20,7 @@ import {
   getStoredMetaApiKey,
   setStoredMetaApiKey,
   validateMetaApiKey,
+  getHealth,
 } from "@/lib/api";
 
 interface MetaKeyModalProps {
@@ -45,6 +46,8 @@ export const MetaKeyModal: React.FC<MetaKeyModalProps> = ({
     message: "",
   });
 
+  const [serverKeyActive, setServerKeyActive] = useState<boolean>(false);
+
   useEffect(() => {
     if (isOpen) {
       const stored = getStoredMetaApiKey();
@@ -52,14 +55,29 @@ export const MetaKeyModal: React.FC<MetaKeyModalProps> = ({
       if (stored) {
         setValidationResult({
           status: "success",
-          message: "API Key loaded from local environment / storage.",
+          message: "API Key active from client session / storage.",
           models: ["sam-3.1", "muse-spark-1.3", "muse-code"],
         });
       } else {
-        setValidationResult({
-          status: "idle",
-          message: "",
-        });
+        getHealth()
+          .then((h) => {
+            if (h.meta_api_configured || h.active_providers?.meta_model_api) {
+              setServerKeyActive(true);
+              setValidationResult({
+                status: "success",
+                message: "Protected Server Key Active: Backend is configured with META_MODEL_API_KEY ($150 Hackathon Grant).",
+                models: ["sam-3.1", "muse-spark-1.3", "muse-code"],
+              });
+            } else {
+              setValidationResult({
+                status: "idle",
+                message: "",
+              });
+            }
+          })
+          .catch(() => {
+            setValidationResult({ status: "idle", message: "" });
+          });
       }
     }
   }, [isOpen]);

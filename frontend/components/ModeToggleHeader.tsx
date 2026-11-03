@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { MetaKeyModal } from "@/components/MetaKeyModal";
 import { BackendStatusModal } from "@/components/BackendStatusModal";
-import { getStoredMetaApiKey } from "@/lib/api";
+import { getStoredMetaApiKey, getHealth } from "@/lib/api";
 
 export type ViewMode = "merchant" | "judge";
 export type ActiveTab = "demo" | "storefront" | "architecture";
@@ -51,8 +51,18 @@ export const ModeToggleHeader: React.FC<ModeToggleHeaderProps> = ({
 
   useEffect(() => {
     const key = getStoredMetaApiKey();
-    setHasMetaKey(Boolean(key));
-  }, []);
+    if (key) {
+      setHasMetaKey(true);
+    } else {
+      getHealth()
+        .then((h) => {
+          if (h.meta_api_configured || h.active_providers?.meta_model_api) {
+            setHasMetaKey(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [backendConnected]);
 
   return (
     <>
