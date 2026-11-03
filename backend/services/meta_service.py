@@ -746,7 +746,21 @@ model Order {{
 _meta_service: Optional[MetaModelService] = None
 
 
-def get_meta_service() -> MetaModelService:
+def get_meta_service(
+    x_meta_api_key: Optional[str] = None,
+    authorization: Optional[str] = None,
+) -> MetaModelService:
+    """
+    Dependency injection for MetaModelService.
+    Dynamically attaches API key from request headers if supplied.
+    """
+    key = x_meta_api_key
+    if not key and authorization and authorization.startswith("Bearer "):
+        key = authorization.replace("Bearer ", "").strip()
+
+    if key and key.strip():
+        return MetaModelService(api_key=key.strip())
+
     global _meta_service
     if _meta_service is None:
         _meta_service = MetaModelService()

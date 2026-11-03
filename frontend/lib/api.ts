@@ -48,6 +48,52 @@ export const resolveStorefrontUrl = (slugOrUrl?: string): string => {
   return `${base}${cleanPath}`;
 };
 
+// ─── Meta Model API Key Storage & Headers ───────────────────────────────────
+
+export const getStoredMetaApiKey = (): string => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("omnistore_meta_api_key") || "";
+  }
+  return process.env.NEXT_PUBLIC_META_MODEL_API_KEY || "";
+};
+
+export const setStoredMetaApiKey = (key: string): void => {
+  if (typeof window !== "undefined") {
+    if (key && key.trim()) {
+      localStorage.setItem("omnistore_meta_api_key", key.trim());
+    } else {
+      localStorage.removeItem("omnistore_meta_api_key");
+    }
+  }
+};
+
+export const getApiHeaders = (extra: Record<string, string> = {}): Record<string, string> => {
+  const headers: Record<string, string> = { ...extra };
+  const key = getStoredMetaApiKey();
+  if (key) {
+    headers["x-meta-api-key"] = key;
+    headers["Authorization"] = `Bearer ${key}`;
+  }
+  return headers;
+};
+
+export async function validateMetaApiKey(apiKey: string): Promise<{
+  valid: boolean;
+  message: string;
+  models: string[];
+}> {
+  const res = await fetch(`${API_BASE_URL}/meta/validate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ apiKey }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.message || `Validation failed (${res.status})`);
+  }
+  return res.json();
+}
+
 // ─── Interfaces & Schemas ───────────────────────────────────────────────────
 
 export interface BoundingBox {
@@ -196,7 +242,9 @@ export interface HealthStatus {
  * Fetch backend health status
  */
 export async function getHealth(): Promise<HealthStatus> {
-  const res = await fetch(`${API_BASE_URL}/health`);
+  const res = await fetch(`${API_BASE_URL}/health`, {
+    headers: getApiHeaders(),
+  });
   if (!res.ok) throw new Error(`Health check failed: ${res.statusText}`);
   return res.json();
 }
@@ -205,7 +253,9 @@ export async function getHealth(): Promise<HealthStatus> {
  * Fetch available squad roles and assigned models
  */
 export async function getSquadRoles(): Promise<{ roles: SquadRoleInfo[] }> {
-  const res = await fetch(`${API_BASE_URL}/agent/roles`);
+  const res = await fetch(`${API_BASE_URL}/agent/roles`, {
+    headers: getApiHeaders(),
+  });
   if (!res.ok) throw new Error(`Failed to fetch squad roles: ${res.statusText}`);
   return res.json();
 }
@@ -228,6 +278,7 @@ export async function scanStore(
 
   const res = await fetch(`${API_BASE_URL}/scan`, {
     method: "POST",
+    headers: getApiHeaders(),
     body: formData,
   });
 
@@ -261,7 +312,7 @@ export async function scanStoreJson(
 
   const res = await fetch(`${API_BASE_URL}/scan/json`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       image_base64: imageBase64,
       merchant_context: context,
@@ -310,7 +361,7 @@ export async function generateStorefrontCode(
 
   const res = await fetch(`${API_BASE_URL}/code/generate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       target_framework: framework,
       store_schema: schema,
@@ -429,7 +480,7 @@ export async function segmentImage(
 ): Promise<SegmentResponse> {
   const res = await fetch(`${API_BASE_URL}/segment`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       image_base64: imageBase64,
       prompt,
@@ -467,7 +518,7 @@ export async function reasonMultimodal({
 }): Promise<ReasonResponse> {
   const res = await fetch(`${API_BASE_URL}/reason`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       prompt,
       merchant_context: merchantContext,
@@ -497,7 +548,7 @@ export async function submitBackgroundJob(
 ): Promise<BackgroundJob> {
   const res = await fetch(`${API_BASE_URL}/jobs`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({
       job_type: jobType,
       payload,
@@ -510,13 +561,17 @@ export async function submitBackgroundJob(
 }
 
 export async function getBackgroundJob(jobId: string): Promise<BackgroundJob> {
-  const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+  const res = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+    headers: getApiHeaders(),
+  });
   if (!res.ok) throw new Error(`Failed to fetch job ${jobId}: ${res.statusText}`);
   return res.json();
 }
 
 export async function listBackgroundJobs(limit: number = 20): Promise<BackgroundJob[]> {
-  const res = await fetch(`${API_BASE_URL}/jobs?limit=${limit}`);
+  const res = await fetch(`${API_BASE_URL}/jobs?limit=${limit}`, {
+    headers: getApiHeaders(),
+  });
   if (!res.ok) throw new Error(`Failed to list jobs: ${res.statusText}`);
   return res.json();
 }
@@ -527,7 +582,7 @@ export async function listBackgroundJobs(limit: number = 20): Promise<Background
 export async function searchMemory(query: string, limit: number = 20) {
   const res = await fetch(`${API_BASE_URL}/memory/search`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getApiHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ query, limit }),
   });
   if (!res.ok) throw new Error(`Memory search failed: ${res.statusText}`);
@@ -535,7 +590,9 @@ export async function searchMemory(query: string, limit: number = 20) {
 }
 
 export async function getMemoryStats() {
-  const res = await fetch(`${API_BASE_URL}/memory/stats`);
+  const res = await fetch(`${API_BASE_URL}/memory/stats`, {
+    headers: getApiHeaders(),
+  });
   if (!res.ok) throw new Error(`Failed to fetch memory stats: ${res.statusText}`);
   return res.json();
 }

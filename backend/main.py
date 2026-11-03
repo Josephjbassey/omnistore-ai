@@ -144,6 +144,11 @@ async def health_check():
     )
 
 
+def start(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
+    """Start uvicorn server for OmniStore AI backend."""
+    uvicorn.run("backend.main:app", host=host, port=port, reload=reload)
+
+
 def start_cli(voice: bool = False):
     from backend.core.agent_core import Agent, load_skills
     agent = Agent("fast", load_skills())
