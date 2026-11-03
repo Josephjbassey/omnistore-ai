@@ -9,6 +9,7 @@ export interface StallPreset {
   category: string;
   badge: string;
   description: string;
+  image_url: string; // Real high-res market stall photograph
   schema: StorefrontSchema;
   boxes: BoundingBox[];
 }
@@ -21,8 +22,9 @@ export const STALL_PRESETS: StallPreset[] = [
     currency: "NGN",
     whatsapp_number: "+2348012345678",
     category: "Fresh Produce & Tubers",
-    badge: "🥔 Fresh Produce & Tubers",
-    description: "Traditional Nigerian market stall specializing in farm-fresh root crops, seasonal vegetables, and staples.",
+    badge: "🥔 Akure Fresh Produce & Tubers",
+    description: "Traditional Nigerian market stall specializing in farm-fresh root crops, seasonal vegetables, palm oil, and staples.",
+    image_url: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1280&q=80",
     boxes: [
       {
         box_id: "seg_001",
@@ -88,6 +90,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 4,
           description: "Freshly harvested organic tubers, dense and starch-rich.",
           image_segment_id: "seg_001",
+          image_url: "https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_002",
@@ -97,6 +100,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 6,
           description: "Farm-fresh red bell tomatoes and hot scotch bonnet peppers.",
           image_segment_id: "seg_002",
+          image_url: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_003",
@@ -106,6 +110,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 8,
           description: "Finely processed crispy cassava flakes, sand-free and tangy.",
           image_segment_id: "seg_003",
+          image_url: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_004",
@@ -115,6 +120,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 10,
           description: "Aromatic, unbleached first-press red palm oil from local mills.",
           image_segment_id: "seg_004",
+          image_url: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_005",
@@ -124,6 +130,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 5,
           description: "Sweet naturally ripened plantains, ideal for dodo or baking.",
           image_segment_id: "seg_005",
+          image_url: "https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_006",
@@ -133,6 +140,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 12,
           description: "Hand-blended curry, thyme, ginger, garlic, and dried crayfish.",
           image_segment_id: "seg_006",
+          image_url: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&q=80",
         },
       ],
     },
@@ -146,6 +154,7 @@ export const STALL_PRESETS: StallPreset[] = [
     category: "Provisions & Daily Essentials",
     badge: "🥫 Nairobi Daily Provisions",
     description: "Compact neighborhood kiosk supplying daily cooking staples, maize flour, milk, and local sukuma wiki greens.",
+    image_url: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1280&q=80",
     boxes: [
       {
         box_id: "seg_001",
@@ -211,6 +220,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 14,
           description: "Fortified premium white corn flour for ugali.",
           image_segment_id: "seg_001",
+          image_url: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_002",
@@ -220,6 +230,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 25,
           description: "Crisp morning-harvested collard greens tied in bunches.",
           image_segment_id: "seg_002",
+          image_url: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_003",
@@ -229,6 +240,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 18,
           description: "Pasteurized whole milk sachets from Kenyan highlands.",
           image_segment_id: "seg_003",
+          image_url: "https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_004",
@@ -238,6 +250,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 8,
           description: "Cholesterol-free refined golden vegetable cooking oil.",
           image_segment_id: "seg_004",
+          image_url: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_005",
@@ -247,6 +260,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 10,
           description: "Clean highland-grown red skin Irish potatoes.",
           image_segment_id: "seg_005",
+          image_url: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_006",
@@ -256,6 +270,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 12,
           description: "Pungent, dry aromatic red onions for rich stews.",
           image_segment_id: "seg_006",
+          image_url: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?auto=format&fit=crop&w=600&q=80",
         },
       ],
     },
@@ -269,6 +284,7 @@ export const STALL_PRESETS: StallPreset[] = [
     category: "Grains, Spices & Dry Fish",
     badge: "🌶️ Makola Grains & Spices",
     description: "Vibrant Ghanaian market vendor stocked with shito pepper, brown beans, groundnut paste, and smoked dried fish.",
+    image_url: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1280&q=80",
     boxes: [
       {
         box_id: "seg_001",
@@ -334,6 +350,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 9,
           description: "Hardwood-smoked dried river fish for rich palm nut soups.",
           image_segment_id: "seg_001",
+          image_url: "https://images.unsplash.com/photo-1534483509719-3feaee7c30da?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_002",
@@ -343,6 +360,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 12,
           description: "Stone-ground roasted peanut butter, unsweetened and smooth.",
           image_segment_id: "seg_002",
+          image_url: "https://images.unsplash.com/photo-1590301157890-4810ed352733?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_003",
@@ -352,6 +370,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 16,
           description: "Authentic spicy smoked shrimp and chili condiment in glass jars.",
           image_segment_id: "seg_003",
+          image_url: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_004",
@@ -361,6 +380,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 10,
           description: "Clean, stone-free dried cowpea beans for waakye and red-red.",
           image_segment_id: "seg_004",
+          image_url: "https://images.unsplash.com/photo-1551462147-37885acc36f1?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_005",
@@ -370,6 +390,7 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 15,
           description: "Fermented corn and cassava mash ready for banku preparation.",
           image_segment_id: "seg_005",
+          image_url: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
         },
         {
           item_id: "item_006",
@@ -379,6 +400,137 @@ export const STALL_PRESETS: StallPreset[] = [
           estimated_quantity: 11,
           description: "Fine roasted crunchy cassava flakes for drinking or eba.",
           image_segment_id: "seg_006",
+          image_url: "https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80",
+        },
+      ],
+    },
+  },
+  {
+    id: "balogun-fabrics",
+    name: "Balogun Heritage Fabrics",
+    location: "Balogun Market, Lagos Island, Nigeria",
+    currency: "NGN",
+    whatsapp_number: "+2348098765432",
+    category: "African Wax & Luxury Textiles",
+    badge: "🧵 Lagos Balogun Textiles",
+    description: "Premium Lagos textile house offering authentic Hollandais wax, brocade, George lace, and hand-woven aso-oke.",
+    image_url: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=1280&q=80",
+    boxes: [
+      {
+        box_id: "seg_001",
+        label: "Hollandais Super Wax (6 Yds)",
+        confidence: 0.97,
+        bbox: [0.15, 0.05, 0.48, 0.32],
+        area: 83000,
+        description: "100% fine cotton Dutch wax with vibrant indigo and gold motifs.",
+      },
+      {
+        box_id: "seg_002",
+        label: "Gold-Embroidered Guinea Brocade",
+        confidence: 0.94,
+        bbox: [0.15, 0.35, 0.48, 0.65],
+        area: 86000,
+        description: "Crisp glazed cotton damask woven with metallic gold threading.",
+      },
+      {
+        box_id: "seg_003",
+        label: "Authentic Woven Kente Stole",
+        confidence: 0.95,
+        bbox: [0.15, 0.68, 0.48, 0.95],
+        area: 79000,
+        description: "Master-weaver handloomed ceremonial stole with royal geometric symbols.",
+      },
+      {
+        box_id: "seg_004",
+        label: "Lagos Swiss Dry Lace (5 Yds)",
+        confidence: 0.92,
+        bbox: [0.55, 0.05, 0.90, 0.32],
+        area: 72000,
+        description: "Intricate laser-cut eyelet lace for wedding and owambe ensembles.",
+      },
+      {
+        box_id: "seg_005",
+        label: "Autogele Pre-Tied Headwrap",
+        confidence: 0.90,
+        bbox: [0.55, 0.35, 0.90, 0.65],
+        area: 68000,
+        description: "Ready-to-wear pleated aso-oke gele with adjustable velcro fastening.",
+      },
+      {
+        box_id: "seg_006",
+        label: "Indigo Hand-Dyed Adire Cloth",
+        confidence: 0.93,
+        bbox: [0.55, 0.68, 0.90, 0.95],
+        area: 75000,
+        description: "Abeokuta heritage cassava-paste resist dyed pure cotton fabric.",
+      },
+    ],
+    schema: {
+      store_title: "Balogun Heritage Fabrics",
+      currency: "NGN",
+      location: "Balogun Market, Lagos Island, Nigeria",
+      whatsapp_number: "+2348098765432",
+      category: "African Wax & Luxury Textiles",
+      inventory: [
+        {
+          item_id: "item_001",
+          name: "Hollandais Super Wax (6 Yds)",
+          category: "Wax Prints",
+          suggested_price: 38000,
+          estimated_quantity: 8,
+          description: "100% fine cotton Dutch wax with vibrant indigo and gold motifs.",
+          image_segment_id: "seg_001",
+          image_url: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          item_id: "item_002",
+          name: "Gold-Embroidered Guinea Brocade",
+          category: "Brocade & Damask",
+          suggested_price: 45000,
+          estimated_quantity: 6,
+          description: "Crisp glazed cotton damask woven with metallic gold threading.",
+          image_segment_id: "seg_002",
+          image_url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          item_id: "item_003",
+          name: "Authentic Woven Kente Stole",
+          category: "Heritage Weaves",
+          suggested_price: 22000,
+          estimated_quantity: 12,
+          description: "Master-weaver handloomed ceremonial stole with royal geometric symbols.",
+          image_segment_id: "seg_003",
+          image_url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          item_id: "item_004",
+          name: "Lagos Swiss Dry Lace (5 Yds)",
+          category: "Lace & Sequins",
+          suggested_price: 52000,
+          estimated_quantity: 5,
+          description: "Intricate laser-cut eyelet lace for wedding and owambe ensembles.",
+          image_segment_id: "seg_004",
+          image_url: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          item_id: "item_005",
+          name: "Autogele Pre-Tied Headwrap",
+          category: "Headwear & Gele",
+          suggested_price: 15000,
+          estimated_quantity: 14,
+          description: "Ready-to-wear pleated aso-oke gele with adjustable velcro fastening.",
+          image_segment_id: "seg_005",
+          image_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
+        },
+        {
+          item_id: "item_006",
+          name: "Indigo Hand-Dyed Adire Cloth",
+          category: "Heritage Weaves",
+          suggested_price: 18500,
+          estimated_quantity: 9,
+          description: "Abeokuta heritage cassava-paste resist dyed pure cotton fabric.",
+          image_segment_id: "seg_006",
+          image_url: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80",
         },
       ],
     },

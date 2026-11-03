@@ -1,12 +1,13 @@
 {
-  "name": "jenna-frontend",
-  "version": "2.0.0",
+  "name": "omnistore-frontend",
+  "version": "2.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "^2.1.1",

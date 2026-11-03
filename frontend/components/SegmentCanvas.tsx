@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Upload,
-  Scan,
   Sparkles,
   MapPin,
   DollarSign,
@@ -11,6 +10,11 @@ import {
   Store,
   Layers,
   Check,
+  Eye,
+  Crosshair,
+  Maximize2,
+  Scan,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   BoundingBox,
@@ -26,6 +30,9 @@ interface SegmentCanvasProps {
   onUpdateMerchantContext: (ctx: MerchantContext) => void;
   onPipelineComplete: (result: PipelineResponse) => void;
   onSelectBox: (box: BoundingBox) => void;
+  selectedBoxId?: string | null;
+  stallImageUrl?: string;
+  inventoryThumbnails?: Record<string, string>;
 }
 
 export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
@@ -33,22 +40,29 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
   onUpdateMerchantContext,
   onPipelineComplete,
   onSelectBox,
+  selectedBoxId: externalSelectedBoxId,
+  stallImageUrl = "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1280&q=80",
+  inventoryThumbnails = {},
 }) => {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [segmentData, setSegmentData] = useState<SegmentResponse | null>(null);
   const [hoveredBoxId, setHoveredBoxId] = useState<string | null>(null);
-  const [selectedBoxId, setSelectedBoxId] = useState<string | null>("seg_001");
+  const [internalSelectedBoxId, setInternalSelectedBoxId] = useState<string | null>("seg_001");
   const [customImage, setCustomImage] = useState<string | null>(null);
+
+  const selectedBoxId = externalSelectedBoxId || internalSelectedBoxId;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initial scan on mount
+  // Sync internal selection when external changes
   useEffect(() => {
-    executeFullScan();
-  }, []);
+    if (externalSelectedBoxId) {
+      setInternalSelectedBoxId(externalSelectedBoxId);
+    }
+  }, [externalSelectedBoxId]);
 
-  const executeFullScan = async (uploadedBase64?: string) => {
+  const executeFullScan = useCallback(async (uploadedBase64?: string) => {
     setIsScanning(true);
     try {
       const payloadImage =
@@ -75,7 +89,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       });
 
       if (result.bounding_boxes.length > 0) {
-        setSelectedBoxId(result.bounding_boxes[0].box_id);
+        setInternalSelectedBoxId(result.bounding_boxes[0].box_id);
         onSelectBox(result.bounding_boxes[0]);
       }
 
@@ -85,7 +99,12 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     } finally {
       setIsScanning(false);
     }
-  };
+  }, [merchantContext, onPipelineComplete, onSelectBox]);
+
+  // Initial scan on mount
+  useEffect(() => {
+    executeFullScan();
+  }, [executeFullScan]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -100,7 +119,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     reader.readAsDataURL(file);
   };
 
-  // Draw SAM 3.1 Bounding Boxes over Shelf Viewport
+  // Draw SAM 3.1 Overlays on HTML5 Canvas over REAL stall photography
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -120,48 +139,166 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       const isSelected = box.box_id === selectedBoxId;
       const isHovered = box.box_id === hoveredBoxId;
 
-      // Box outline
-      ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
-      ctx.strokeStyle = isSelected
-        ? "#ffffff"
-        : isHovered
-        ? "#38bdf8"
-        : "rgba(56, 189, 248, 0.65)";
-      ctx.strokeRect(x, y, boxW, boxH);
+      ctx.save();
 
-      // Box translucent fill
+      // If polygon mask exists, render polygon mask
+      if (box.polygon_mask && box.polygon_mask.length > 2) {
+        ctx.beginPath();
+        const firstPt = box.polygon_mask[0];
+        ctx.moveTo(firstPt[0] * canvas.width, firstPt[1] * canvas.height);
+        for (let i = 1; i < box.polygon_mask.length; i++) {
+          const pt = box.polygon_mask[i];
+          ctx.lineTo(pt[0] * canvas.width, pt[1] * canvas.height);
+        }
+        ctx.closePath();
+
+        // Polygon fill
+        ctx.fillStyle = isSelected
+          ? "rgba(16, 185, 129, 0.26)"
+          : isHovered
+          ? "rgba(56, 189, 248, 0.28)"
+          : "rgba(56, 189, 248, 0.10)";
+        ctx.fill();
+
+        // Polygon stroke
+        ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
+        ctx.strokeStyle = isSelected
+          ? "#10b981"
+          : isHovered
+          ? "#38bdf8"
+          : "rgba(56, 189, 248, 0.65)";
+        ctx.stroke();
+      }
+
+      // Draw refined rounded rectangle bounding box
+      const radius = 8;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + boxW - radius, y);
+      ctx.quadraticCurveTo(x + boxW, y, x + boxW, y + radius);
+      ctx.lineTo(x + boxW, y + boxH - radius);
+      ctx.quadraticCurveTo(x + boxW, y + boxH, x + boxW - radius, y + boxH);
+      ctx.lineTo(x + radius, y + boxH);
+      ctx.quadraticCurveTo(x, y + boxH, x, y + boxH - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+
+      // Translucent box fill
       ctx.fillStyle = isSelected
-        ? "rgba(255, 255, 255, 0.14)"
+        ? "rgba(16, 185, 129, 0.18)"
         : isHovered
         ? "rgba(56, 189, 248, 0.22)"
-        : "rgba(56, 189, 248, 0.08)";
-      ctx.fillRect(x, y, boxW, boxH);
+        : "rgba(14, 22, 36, 0.14)";
+      ctx.fill();
 
-      // Monospace label tag
-      const labelText = `${box.label} · ${(box.confidence * 100).toFixed(0)}%`;
-      ctx.font = "bold 12px ui-monospace, SFMono-Regular, monospace";
-      const metrics = ctx.measureText(labelText);
-      const tagW = metrics.width + 12;
-      const tagH = 20;
-      const tagY = Math.max(0, y - tagH);
+      // Box stroke with subtle glow
+      ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
+      if (isSelected) {
+        ctx.strokeStyle = "#10b981";
+        ctx.shadowColor = "rgba(16, 185, 129, 0.8)";
+        ctx.shadowBlur = 14;
+      } else if (isHovered) {
+        ctx.strokeStyle = "#38bdf8";
+        ctx.shadowColor = "rgba(56, 189, 248, 0.7)";
+        ctx.shadowBlur = 10;
+      } else {
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.65)";
+        ctx.shadowBlur = 0;
+      }
+      ctx.stroke();
 
-      ctx.fillStyle = isSelected ? "#ffffff" : isHovered ? "#38bdf8" : "#0d131f";
-      ctx.fillRect(x, tagY, tagW, tagH);
+      // Reset shadow for text tags
+      ctx.shadowBlur = 0;
 
-      ctx.fillStyle = isSelected ? "#0a0d14" : isHovered ? "#080c14" : "#e2e8f0";
-      ctx.fillText(labelText, x + 6, tagY + 14);
+      // Corner crosshairs on selected item
+      if (isSelected) {
+        const arm = 12;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        // Top-left
+        ctx.beginPath();
+        ctx.moveTo(x, y + arm); ctx.lineTo(x, y); ctx.lineTo(x + arm, y);
+        ctx.stroke();
+        // Top-right
+        ctx.beginPath();
+        ctx.moveTo(x + boxW - arm, y); ctx.lineTo(x + boxW, y); ctx.lineTo(x + boxW, y + arm);
+        ctx.stroke();
+        // Bottom-left
+        ctx.beginPath();
+        ctx.moveTo(x, y + boxH - arm); ctx.lineTo(x, y + boxH); ctx.lineTo(x + arm, y + boxH);
+        ctx.stroke();
+        // Bottom-right
+        ctx.beginPath();
+        ctx.moveTo(x + boxW - arm, y + boxH); ctx.lineTo(x + boxW, y + boxH); ctx.lineTo(x + boxW, y + boxH - arm);
+        ctx.stroke();
+      }
+
+      // Floating Category & Confidence Tag
+      const labelText = `${box.label}`;
+      const confText = `${(box.confidence * 100).toFixed(0)}%`;
+      ctx.font = "600 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      const labelMetrics = ctx.measureText(labelText);
+      ctx.font = "bold 10px ui-monospace, SFMono-Regular, monospace";
+      const confMetrics = ctx.measureText(confText);
+
+      const tagW = labelMetrics.width + confMetrics.width + 24;
+      const tagH = 22;
+      const tagY = Math.max(6, y - tagH - 4);
+      const tagX = Math.min(x, canvas.width - tagW - 8);
+
+      // Tag pill background with high contrast
+      ctx.beginPath();
+      const r = 6;
+      ctx.moveTo(tagX + r, tagY);
+      ctx.lineTo(tagX + tagW - r, tagY);
+      ctx.quadraticCurveTo(tagX + tagW, tagY, tagX + tagW, tagY + r);
+      ctx.lineTo(tagX + tagW, tagY + tagH - r);
+      ctx.quadraticCurveTo(tagX + tagW, tagY + tagH, tagX + tagW - r, tagY + tagH);
+      ctx.lineTo(tagX + r, tagY + tagH);
+      ctx.quadraticCurveTo(tagX, tagY + tagH, tagX, tagY + tagH - r);
+      ctx.lineTo(tagX, tagY + r);
+      ctx.quadraticCurveTo(tagX, tagY, tagX + r, tagY);
+      ctx.closePath();
+
+      ctx.fillStyle = isSelected
+        ? "rgba(6, 78, 59, 0.95)"
+        : isHovered
+        ? "rgba(7, 43, 74, 0.95)"
+        : "rgba(11, 17, 27, 0.92)";
+      ctx.fill();
+
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = isSelected
+        ? "#10b981"
+        : isHovered
+        ? "#38bdf8"
+        : "rgba(255, 255, 255, 0.25)";
+      ctx.stroke();
+
+      // Label text
+      ctx.font = "600 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+      ctx.fillStyle = isSelected ? "#ecfdf5" : isHovered ? "#f0f9ff" : "#f1f5f9";
+      ctx.fillText(labelText, tagX + 8, tagY + 15);
+
+      // Confidence badge
+      ctx.font = "bold 10px ui-monospace, SFMono-Regular, monospace";
+      ctx.fillStyle = isSelected ? "#34d399" : isHovered ? "#38bdf8" : "#94a3b8";
+      ctx.fillText(confText, tagX + labelMetrics.width + 14, tagY + 15);
+
+      ctx.restore();
     });
   }, [segmentData, hoveredBoxId, selectedBoxId]);
 
   return (
-    <div className="flex flex-col h-full bg-[#0d1117] rounded-2xl border border-white/10 p-4 shadow-2xl">
+    <div className="flex flex-col h-full bg-[#0b0e14] rounded-2xl border border-white/[0.08] p-4 sm:p-5 shadow-2xl backdrop-blur-md">
       {/* Merchant Context Header */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pb-3 border-b border-white/10">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pb-3.5 border-b border-white/[0.08]">
         <div>
-          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
+          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1 font-semibold tracking-wider">
             Store Name
           </label>
-          <div className="flex items-center space-x-2 bg-[#161b22] border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors">
+          <div className="flex items-center space-x-2 bg-[#121622] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
             <Store className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
             <input
               type="text"
@@ -169,16 +306,17 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, store_name: e.target.value })
               }
-              className="bg-transparent text-xs text-slate-100 focus:outline-none w-full"
+              className="bg-transparent text-xs text-slate-100 font-medium focus:outline-none w-full"
+              placeholder="e.g. Mama Cass Market"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
-            Physical Location
+          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1 font-semibold tracking-wider">
+            Location
           </label>
-          <div className="flex items-center space-x-2 bg-[#161b22] border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors">
+          <div className="flex items-center space-x-2 bg-[#121622] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
             <MapPin className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
             <input
               type="text"
@@ -186,38 +324,39 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, location: e.target.value })
               }
-              className="bg-transparent text-xs text-slate-100 focus:outline-none w-full"
+              className="bg-transparent text-xs text-slate-100 font-medium focus:outline-none w-full"
+              placeholder="Akure, Nigeria"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
+          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1 font-semibold tracking-wider">
             Currency
           </label>
-          <div className="flex items-center space-x-2 bg-[#161b22] border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors">
+          <div className="flex items-center space-x-2 bg-[#121622] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
             <DollarSign className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
             <select
               value={merchantContext.currency}
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, currency: e.target.value })
               }
-              className="bg-transparent text-xs text-slate-100 focus:outline-none w-full"
+              className="bg-transparent text-xs text-slate-100 font-medium focus:outline-none w-full"
             >
-              <option value="NGN" className="bg-[#161b22]">NGN (₦ Nigerian Naira)</option>
-              <option value="USD" className="bg-[#161b22]">USD ($ US Dollar)</option>
-              <option value="KES" className="bg-[#161b22]">KES (KSh Kenyan Shilling)</option>
-              <option value="GHS" className="bg-[#161b22]">GHS (GH₵ Ghanaian Cedi)</option>
-              <option value="ZAR" className="bg-[#161b22]">ZAR (R South African Rand)</option>
+              <option value="NGN" className="bg-[#121622]">NGN (₦ Naira)</option>
+              <option value="USD" className="bg-[#121622]">USD ($ Dollar)</option>
+              <option value="KES" className="bg-[#121622]">KES (KSh Shilling)</option>
+              <option value="GHS" className="bg-[#121622]">GHS (GH₵ Cedi)</option>
+              <option value="ZAR" className="bg-[#121622]">ZAR (R Rand)</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1">
-            WhatsApp Orders
+          <label className="text-[10px] uppercase font-mono text-slate-400 block mb-1 font-semibold tracking-wider">
+            WhatsApp Checkout
           </label>
-          <div className="flex items-center space-x-2 bg-[#161b22] border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors">
+          <div className="flex items-center space-x-2 bg-[#121622] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
             <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
             <input
               type="text"
@@ -225,7 +364,8 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, whatsapp_number: e.target.value })
               }
-              className="bg-transparent text-xs text-slate-100 focus:outline-none w-full font-mono"
+              className="bg-transparent text-xs text-slate-100 focus:outline-none w-full font-mono font-medium"
+              placeholder="+2348012345678"
             />
           </div>
         </div>
@@ -234,13 +374,14 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       {/* Action / Trigger Bar */}
       <div className="flex items-center justify-between py-3">
         <div className="flex items-center space-x-2">
-          <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          <h2 className="font-semibold text-xs text-slate-100 uppercase tracking-wider font-mono">
-            SAM 3.1 Visual Perception · Spatial Extraction
+          <span className="status-dot status-dot-cyan" />
+          <h2 className="font-semibold text-xs text-slate-200 uppercase tracking-wider font-mono flex items-center space-x-1.5">
+            <span>SAM 3.1 Visual Canvas</span>
+            <span className="text-[10px] text-cyan-400 lowercase font-normal">(real stall perception)</span>
           </h2>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2.5">
           <input
             type="file"
             ref={fileInputRef}
@@ -248,128 +389,54 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
             accept="image/*"
             className="hidden"
           />
+
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#161b22] hover:bg-[#21262d] text-slate-200 border border-white/10 transition-colors"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141924] hover:bg-[#1a2232] text-slate-300 border border-white/10 transition-colors shadow-sm active:scale-95"
           >
             <Upload className="w-3.5 h-3.5 text-slate-400" />
             <span>Upload Photo</span>
           </button>
 
+          {/* Commanding 1-Click Store Scan CTA with radial gradient glow */}
           <button
             onClick={() => executeFullScan(customImage || undefined)}
             disabled={isScanning}
-            className="flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 active:translate-y-0.5 transition-all disabled:opacity-50"
+            className="btn-command-emerald flex items-center space-x-2 px-4 py-1.5 rounded-xl text-xs font-bold shadow-glow-emerald disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
-            <span>{isScanning ? "Digitizing..." : "1-Click Store Scan"}</span>
+            <span>{isScanning ? "Extracting Spatial Masks..." : "1-Click Store Scan"}</span>
           </button>
         </div>
       </div>
 
-      {/* Main Vector Shelf & Interactive Canvas Viewport */}
-      <div className="relative flex-1 min-h-[340px] bg-[#07090e] rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
-        {/* Render Vector Stall Artwork Directly (Zero broken image dependencies) */}
-        {!customImage ? (
-          <svg
-            viewBox="0 0 1280 720"
-            className="w-full h-full object-contain select-none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <rect width="1280" height="720" fill="#080a0f" />
+      {/* Main Photographic Shelf & Interactive Canvas Viewport */}
+      <div className="relative flex-1 min-h-[360px] bg-[#07090e] rounded-xl overflow-hidden border border-white/[0.08] flex items-center justify-center group shadow-inner">
+        {/* Render Real High-Resolution Stall Photography */}
+        <img
+          src={
+            customImage ||
+            stallImageUrl ||
+            "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1280&q=80"
+          }
+          alt={`${merchantContext.store_name} Market Stall`}
+          className="w-full h-full object-cover select-none brightness-[0.80] contrast-[1.08] pointer-events-none"
+        />
 
-            {/* Market Awning / Stall Canopy */}
-            <path d="M0,0 L1280,0 L1280,75 L0,75 Z" fill="#064e3b" />
-            <path d="M0,75 Q640,115 1280,75 L1280,88 Q640,128 0,88 Z" fill="#10b981" />
-            <text x="45" y="45" fill="#ffffff" fontFamily="sans-serif" fontSize="22" fontWeight="700">
-              {merchantContext.store_name} — Provisions &amp; Fresh Harvest
-            </text>
-            <text x="45" y="68" fill="#a7f3d0" fontFamily="monospace" fontSize="13">
-              {merchantContext.location} • Physical Inventory Shelf Frame #042
-            </text>
+        {/* Ambient Top Vignette */}
+        <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#080a0f]/80 to-transparent pointer-events-none z-0" />
+        <div className="absolute top-3 left-4 flex items-center space-x-2 z-10 pointer-events-none">
+          <span className="px-2.5 py-0.5 rounded-md bg-[#080a0f]/85 border border-white/15 text-[11px] font-mono text-emerald-300 font-semibold backdrop-blur-md">
+            {merchantContext.store_name} · Real Stall Frame #042
+          </span>
+        </div>
 
-            {/* Wooden Shelving Architecture */}
-            <rect x="35" y="110" width="1210" height="575" rx="12" fill="#141820" stroke="#21262d" strokeWidth="2" />
-            <rect x="35" y="380" width="1210" height="18" fill="#2d333b" />
-            <rect x="35" y="665" width="1210" height="20" fill="#2d333b" />
-
-            {/* Shelf 1, Slot 1: Large Organic Yams */}
-            <g id="stall-yams">
-              <rect x="65" y="135" width="350" height="235" rx="10" fill="#1c1410" stroke="#78350f" strokeWidth="1.5" />
-              <ellipse cx="180" cy="250" rx="90" ry="34" fill="#92400e" transform="rotate(-15 180 250)" />
-              <ellipse cx="280" cy="240" rx="95" ry="36" fill="#78350f" transform="rotate(10 280 240)" />
-              <ellipse cx="230" cy="285" rx="100" ry="40" fill="#b45309" />
-              <text x="85" y="175" fill="#fef3c7" fontFamily="sans-serif" fontWeight="700" fontSize="15">Organic Local Yams</text>
-              <text x="85" y="196" fill="#f59e0b" fontFamily="monospace" fontSize="12">Qty: 4 Large Tubers • 2,500 {merchantContext.currency}/ea</text>
-            </g>
-
-            {/* Shelf 1, Slot 2: Tomatoes & Peppers Basket */}
-            <g id="stall-tomatoes">
-              <rect x="435" y="135" width="370" height="235" rx="10" fill="#1f1012" stroke="#991b1b" strokeWidth="1.5" />
-              <circle cx="525" cy="250" r="38" fill="#dc2626" />
-              <circle cx="585" cy="240" r="36" fill="#ef4444" />
-              <circle cx="650" cy="255" r="40" fill="#b91c1c" />
-              <circle cx="560" cy="295" r="32" fill="#f87171" />
-              <circle cx="620" cy="290" r="34" fill="#dc2626" />
-              <path d="M700,260 Q730,220 740,270 Z" fill="#ea580c" />
-              <path d="M730,280 Q760,250 750,300 Z" fill="#f97316" />
-              <text x="455" y="175" fill="#fee2e2" fontFamily="sans-serif" fontWeight="700" fontSize="15">Fresh Red Produce Basket</text>
-              <text x="455" y="196" fill="#ef4444" fontFamily="monospace" fontSize="12">Qty: 6 Baskets • 1,800 {merchantContext.currency}/ea</text>
-            </g>
-
-            {/* Shelf 1, Slot 3: White Garri 5kg Tubs */}
-            <g id="stall-garri">
-              <rect x="825" y="135" width="395" height="235" rx="10" fill="#131b26" stroke="#2563eb" strokeWidth="1.5" />
-              <rect x="870" y="210" width="135" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2.5" />
-              <rect x="1035" y="210" width="135" height="140" rx="8" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="2.5" />
-              <text x="845" y="175" fill="#dbeafe" fontFamily="sans-serif" fontWeight="700" fontSize="15">Ijebu White Garri (5kg Seal)</text>
-              <text x="845" y="196" fill="#60a5fa" fontFamily="monospace" fontSize="12">Qty: 8 Sealed • 3,200 {merchantContext.currency}/ea</text>
-            </g>
-
-            {/* Shelf 2, Slot 4: Pure Palm Oil 1L Bottles */}
-            <g id="stall-palmoil">
-              <rect x="65" y="415" width="350" height="235" rx="10" fill="#201108" stroke="#c2410c" strokeWidth="1.5" />
-              <rect x="130" y="470" width="60" height="150" rx="8" fill="#b91c1c" opacity="0.9" />
-              <rect x="210" y="470" width="60" height="150" rx="8" fill="#c2410c" opacity="0.9" />
-              <rect x="290" y="470" width="60" height="150" rx="8" fill="#9a3412" opacity="0.9" />
-              <text x="85" y="450" fill="#ffedd5" fontFamily="sans-serif" fontWeight="700" fontSize="15">Pure Palm Oil (1L Bottle)</text>
-              <text x="85" y="472" fill="#fb923c" fontFamily="monospace" fontSize="12">Qty: 10 Bottles • 1,600 {merchantContext.currency}/ea</text>
-            </g>
-
-            {/* Shelf 2, Slot 5: Ripe Cooking Plantains */}
-            <g id="stall-plantains">
-              <rect x="435" y="415" width="370" height="235" rx="10" fill="#191d0d" stroke="#65a30d" strokeWidth="1.5" />
-              <path d="M480,550 Q560,490 640,560 Q560,530 480,550 Z" fill="#eab308" />
-              <path d="M510,580 Q590,520 670,590 Q590,560 510,580 Z" fill="#ca8a04" />
-              <path d="M540,610 Q620,550 700,620 Q620,590 540,610 Z" fill="#a16207" />
-              <text x="455" y="450" fill="#fef9c3" fontFamily="sans-serif" fontWeight="700" fontSize="15">Ripe Plantain Bunches</text>
-              <text x="455" y="472" fill="#eab308" fontFamily="monospace" fontSize="12">Qty: 5 Bunches • 2,000 {merchantContext.currency}/ea</text>
-            </g>
-
-            {/* Shelf 2, Slot 6: Seasoning & Spice Packs */}
-            <g id="stall-spices">
-              <rect x="825" y="415" width="395" height="235" rx="10" fill="#1e180d" stroke="#d97706" strokeWidth="1.5" />
-              <rect x="860" y="500" width="90" height="110" rx="6" fill="#b45309" />
-              <rect x="970" y="500" width="90" height="110" rx="6" fill="#b91c1c" />
-              <rect x="1080" y="500" width="90" height="110" rx="6" fill="#d97706" />
-              <text x="845" y="450" fill="#fef3c7" fontFamily="sans-serif" fontWeight="700" fontSize="15">Assorted Market Spices</text>
-              <text x="845" y="472" fill="#f59e0b" fontFamily="monospace" fontSize="12">Qty: 12 Packs • 900 {merchantContext.currency}/ea</text>
-            </g>
-          </svg>
-        ) : (
-          <img
-            src={customImage}
-            alt="Uploaded Physical Inventory"
-            className="w-full h-full object-contain pointer-events-none select-none"
-          />
-        )}
-
-        {/* Interactive SAM 3.1 Bounding Box Canvas */}
+        {/* Interactive SAM 3.1 Bounding Box Canvas with 100% Click-to-Reason */}
         <canvas
           ref={canvasRef}
           width={1280}
           height={720}
-          className="absolute inset-0 w-full h-full object-contain cursor-pointer"
+          className="absolute inset-0 w-full h-full object-contain cursor-crosshair z-10"
           onClick={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
             const clickX = (e.clientX - rect.left) / rect.width;
@@ -381,7 +448,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
                 return clickX >= xmin && clickX <= xmax && clickY >= ymin && clickY <= ymax;
               });
               if (clicked) {
-                setSelectedBoxId(clicked.box_id);
+                setInternalSelectedBoxId(clicked.box_id);
                 onSelectBox(clicked);
               }
             }
@@ -403,29 +470,50 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
         />
       </div>
 
-      {/* Segment Selector Quick Strip */}
+      {/* Segment Selector Quick Strip (With Real Product Thumbnails) */}
       {segmentData && segmentData.bounding_boxes.length > 0 && (
-        <div className="pt-3 flex items-center justify-between">
-          <span className="text-[11px] font-mono text-slate-400">
-            Detected: {segmentData.bounding_boxes.length} SKUs
-          </span>
-          <div className="flex items-center space-x-1.5 overflow-x-auto py-0.5">
-            {segmentData.bounding_boxes.map((box) => (
-              <button
-                key={box.box_id}
-                onClick={() => {
-                  setSelectedBoxId(box.box_id);
-                  onSelectBox(box);
-                }}
-                className={`text-[11px] font-mono px-2.5 py-1 rounded-md border transition-all ${
-                  box.box_id === selectedBoxId
-                    ? "bg-white text-black font-semibold border-white"
-                    : "bg-[#161b22] text-slate-300 border-white/10 hover:border-white/30"
-                }`}
-              >
-                {box.label}
-              </button>
-            ))}
+        <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-1.5 text-[11px] font-mono text-slate-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>Detected:</span>
+            <span className="text-white font-bold">{segmentData.bounding_boxes.length} SKUs</span>
+            <span className="text-slate-500">· click to inspect cognitive reasoning</span>
+          </div>
+
+          <div className="flex items-center space-x-1.5 overflow-x-auto py-0.5 no-scrollbar">
+            {segmentData.bounding_boxes.map((box) => {
+              const thumbUrl = inventoryThumbnails[box.box_id];
+              return (
+                <button
+                  key={box.box_id}
+                  onClick={() => {
+                    setInternalSelectedBoxId(box.box_id);
+                    onSelectBox(box);
+                  }}
+                  className={`text-[11px] font-mono px-2.5 py-1 rounded-lg border transition-all flex items-center space-x-2 whitespace-nowrap ${
+                    box.box_id === selectedBoxId
+                      ? "bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-sm"
+                      : "bg-[#141924] text-slate-300 border-white/10 hover:border-white/25 hover:text-white"
+                  }`}
+                >
+                  {thumbUrl && (
+                    <img
+                      src={thumbUrl}
+                      alt={box.label}
+                      className="w-4 h-4 rounded-full object-cover border border-white/20 flex-shrink-0"
+                    />
+                  )}
+                  <span>{box.label}</span>
+                  <span
+                    className={`text-[10px] ${
+                      box.box_id === selectedBoxId ? "text-slate-900" : "text-emerald-400"
+                    }`}
+                  >
+                    {(box.confidence * 100).toFixed(0)}%
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

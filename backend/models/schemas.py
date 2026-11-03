@@ -85,6 +85,7 @@ class InventoryItem(BaseModel):
     description: str = Field(..., description="Localized marketing description for customers")
     image_segment_id: str = Field(..., description="Associated SAM 3.1 segment box ID")
     crop_base64: Optional[str] = Field(default=None, description="Thumbnail image of the product")
+    image_url: Optional[str] = Field(default=None, description="Direct URL of the real product photo")
 
 
 class StorefrontSchema(BaseModel):

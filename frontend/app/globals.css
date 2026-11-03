@@ -3,72 +3,182 @@
 @tailwind utilities;
 
 :root {
-  --background: #0b0f17;
+  --background: #080a0f;
   --foreground: #f1f5f9;
+  --surface: #0e121a;
+  --surface-raised: #141924;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --accent-emerald: #10b981;
+  --accent-purple: #a855f7;
+  --accent-cyan: #38bdf8;
+  --accent-gold: #f59e0b;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Geist Sans", "Inter", "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
 }
 
-/* Custom Scrollbar */
+/* Tabular figures for numbers, currency, timestamps */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Refined Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #080a0f;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
+  background: #1e2638;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
 
-/* Glassmorphism */
+/* Executive Glassmorphism Surfaces */
 .glass-panel {
-  background: rgba(18, 24, 36, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(14, 18, 27, 0.7);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.glass-panel-glow {
-  background: rgba(18, 24, 36, 0.85);
+.glass-panel-elevated {
+  background: rgba(17, 22, 33, 0.85);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 240, 255, 0.2);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
 }
 
-/* Cyan & Purple Neon Glows */
-.glow-cyan {
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);
+.glass-glow-emerald {
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.18);
 }
 
-.glow-purple {
-  box-shadow: 0 0 15px rgba(157, 78, 221, 0.35);
+.glass-glow-purple {
+  background: rgba(168, 85, 247, 0.04);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.18);
 }
 
-/* Pulsing cursor for stream output */
-@keyframes blink {
+.glass-glow-cyan {
+  background: rgba(56, 189, 248, 0.04);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 25px -4px rgba(56, 189, 248, 0.18);
+}
+
+/* Commanding Primary Action Buttons */
+.btn-command-emerald {
+  position: relative;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #06110d;
+  font-weight: 700;
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-command-emerald:hover:not(:disabled) {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 0 32px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-command-emerald:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+.btn-command-purple {
+  position: relative;
+  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-command-purple:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
+  box-shadow: 0 0 32px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-command-purple:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Subtle Animated Status Dots */
+.status-dot {
+  position: relative;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  opacity: 0.4;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.status-dot-emerald {
+  background-color: #10b981;
+}
+.status-dot-emerald::after {
+  background-color: #10b981;
+}
+
+.status-dot-cyan {
+  background-color: #38bdf8;
+}
+.status-dot-cyan::after {
+  background-color: #38bdf8;
+}
+
+.status-dot-purple {
+  background-color: #a855f7;
+}
+.status-dot-purple::after {
+  background-color: #a855f7;
+}
+
+.status-dot-amber {
+  background-color: #f59e0b;
+}
+.status-dot-amber::after {
+  background-color: #f59e0b;
+}
+
+/* Pulsing stream cursor */
+@keyframes cursorBlink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 
 .animate-cursor {
   display: inline-block;
-  width: 8px;
-  height: 15px;
+  width: 7px;
+  height: 14px;
   margin-left: 2px;
-  background-color: #00f0ff;
-  animation: blink 0.8s infinite;
+  background-color: #10b981;
+  animation: cursorBlink 0.9s infinite;
   vertical-align: middle;
 }

@@ -19,6 +19,35 @@ export const getApiBaseUrl = (): string => {
 
 export const API_BASE_URL = getApiBaseUrl();
 
+export const getAppUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
+  }
+  if (typeof window !== "undefined" && window.location.origin) {
+    return window.location.origin;
+  }
+  return "http://localhost:3000";
+};
+
+export const resolveStorefrontUrl = (slugOrUrl?: string): string => {
+  const base = getAppUrl();
+  if (!slugOrUrl) return `${base}/store/demo`;
+  if (slugOrUrl.startsWith("http://") || slugOrUrl.startsWith("https://")) {
+    // If it points to an external or hardcoded demo domain, map it dynamically to NEXT_PUBLIC_APP_URL
+    if (slugOrUrl.includes("omnistore-demo.vercel.app") || slugOrUrl.includes("example.com")) {
+      try {
+        const parsed = new URL(slugOrUrl);
+        return `${base}${parsed.pathname}`;
+      } catch {
+        return slugOrUrl;
+      }
+    }
+    return slugOrUrl;
+  }
+  const cleanPath = slugOrUrl.startsWith("/") ? slugOrUrl : `/${slugOrUrl}`;
+  return `${base}${cleanPath}`;
+};
+
 // ─── Interfaces & Schemas ───────────────────────────────────────────────────
 
 export interface BoundingBox {
@@ -65,6 +94,7 @@ export interface InventoryItem {
   description: string;
   image_segment_id: string;
   crop_base64?: string;
+  image_url?: string;
 }
 
 export interface StorefrontSchema {

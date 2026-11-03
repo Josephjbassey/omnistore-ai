@@ -460,8 +460,13 @@ class MetaModelService:
         storefront bundle pre-populated with catalog and WhatsApp 1-click checkout.
         """
         start_time = time.time()
+        app_base = (
+            os.getenv("NEXT_PUBLIC_APP_URL")
+            or os.getenv("APP_URL")
+            or "http://localhost:3000"
+        ).rstrip("/")
         store_slug = schema.store_title.lower().replace(" ", "-").replace("'", "")
-        preview_url = f"https://omnistore-demo.vercel.app/{store_slug}"
+        preview_url = f"{app_base}/store/{store_slug}"
 
         # Live Meta Model API call
         if self.api_key and not self.api_key.startswith("mock_"):
@@ -538,15 +543,18 @@ export default function Storefront() {{
       <main className="max-w-md mx-auto p-4 space-y-3">
         <div className="grid grid-cols-1 gap-3">
           {{PRODUCTS.map((prod) => (
-            <div key={{prod.item_id}} className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex justify-between items-center">
-              <div>
-                <h3 className="font-semibold text-sm text-slate-200">{{prod.name}}</h3>
+            <div key={{prod.item_id}} className="bg-slate-900 border border-slate-800 rounded-xl p-3 flex gap-3 items-center">
+              {{prod.image_url && (
+                <img src={{prod.image_url}} alt={{prod.name}} className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-slate-800" />
+              )}}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-slate-200 truncate">{{prod.name}}</h3>
                 <span className="text-xs font-mono text-emerald-400 font-bold">{{prod.suggested_price}} {schema.currency}</span>
-                <p className="text-[11px] text-slate-400 mt-0.5">{{prod.description}}</p>
+                <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{{prod.description}}</p>
               </div>
               <button
                 onClick={{() => addToCart(prod.item_id)}}
-                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold text-white shadow-md"
+                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs font-bold text-white shadow-md flex-shrink-0"
               >
                 + Add ({{cart[prod.item_id] || 0}})
               </button>

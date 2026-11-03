@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     "Micro-Commerce",
     "Meta Global AI Hackathon",
     "Build for Your World",
+    "Lagos Market",
+    "African Commerce",
   ],
   authors: [{ name: "Joseph John Bassey" }],
 };
@@ -32,11 +34,11 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-[#090b0e] text-slate-100 antialiased selection:bg-emerald-500 selection:text-black">
+      <body className="min-h-screen bg-[#080a0f] text-slate-100 antialiased selection:bg-emerald-500 selection:text-black font-sans">
         {children}
       </body>
     </html>
