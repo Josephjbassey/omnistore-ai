@@ -21,6 +21,7 @@ import {
   Globe,
   X,
   Plus,
+  Download,
 } from "lucide-react";
 import { StorefrontSchema, CodeGenerateResponse, resolveStorefrontUrl, getAppUrl } from "@/lib/api";
 
@@ -38,6 +39,7 @@ export const StorefrontPreview: React.FC<StorefrontPreviewProps> = ({
   const [cart, setCart] = useState<{ [id: string]: number }>({});
   const [copied, setCopied] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [copiedPromo, setCopiedPromo] = useState(false);
   const [showDeployModal, setShowDeployModal] = useState(false);
 
   const inventory = storeSchema?.inventory || [];
@@ -51,8 +53,44 @@ export const StorefrontPreview: React.FC<StorefrontPreviewProps> = ({
   // Real live working storefront URL on this application
   const realStoreUrl = resolveStorefrontUrl(codeResponse?.preview_url || `/store/${storeSlug}`);
 
-  // Real 1-Click Vercel Deploy URL for GitHub repo
-  const vercelDeployUrl = `https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FJosephjbassey%2Fomnistore-ai&project-name=omnistore-storefront&repository-name=omnistore-storefront`;
+  const promoText = `🏪 Welcome to ${storeSchema?.store_title || "our store"}!\n` +
+    `Shop our newly digitized market catalog online and order directly via WhatsApp:\n` +
+    `👉 ${realStoreUrl}\n\n` +
+    `📍 ${storeSchema?.location || "Central Market"}\n` +
+    `🛵 Fast local delivery & pay-on-delivery available!`;
+
+  const handleShareWhatsAppBroadcast = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(promoText)}`, "_blank");
+  };
+
+  const handleCopyPromoText = () => {
+    navigator.clipboard.writeText(promoText);
+    setCopiedPromo(true);
+    setTimeout(() => setCopiedPromo(false), 2000);
+  };
+
+  const handleDownloadCode = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(
+      JSON.stringify(
+        {
+          store_title: storeSchema?.store_title,
+          currency: storeSchema?.currency,
+          location: storeSchema?.location,
+          whatsapp_number: storeSchema?.whatsapp_number,
+          inventory: storeSchema?.inventory,
+          synthesized_files: files,
+        },
+        null,
+        2
+      )
+    );
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `${storeSlug}-storefront.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
 
   const addToCart = (id: string) => {
     setCart((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
@@ -376,31 +414,60 @@ export const StorefrontPreview: React.FC<StorefrontPreviewProps> = ({
               </div>
             </div>
 
-            {/* Option 2: Real 1-Click Vercel Deploy URL */}
-            <div className="p-4 rounded-2xl bg-[#121622] border border-purple-500/30 space-y-2.5">
+            {/* Option 2: 1-Click WhatsApp Customer Broadcast */}
+            <div className="p-4 rounded-2xl bg-[#121622] border border-green-500/30 space-y-2.5 shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-white flex items-center space-x-1.5">
-                  <ExternalLink className="w-4 h-4 text-purple-400" />
-                  <span>Option 2: 1-Click Vercel Cloud Deploy</span>
+                  <Share2 className="w-4 h-4 text-green-400" />
+                  <span>Option 2: 1-Click WhatsApp Broadcast</span>
                 </span>
-                <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
-                  GitHub &amp; Vercel
+                <span className="px-2 py-0.5 rounded bg-green-500/20 text-green-300 text-[10px] font-mono font-bold">
+                  Merchant Kit
                 </span>
               </div>
               <p className="text-[11px] text-slate-300">
-                Deploy directly to your own Vercel account from the official GitHub repository (<code className="text-purple-300 font-mono text-[10px]">Josephjbassey/omnistore-ai</code>).
+                Instantly broadcast your new digital storefront link to your WhatsApp customer lists and status updates.
               </p>
-              <a
-                href={vercelDeployUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full flex items-center justify-center space-x-2 py-2 rounded-xl bg-white hover:bg-slate-200 text-black font-bold text-xs shadow-md transition-all"
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  onClick={handleShareWhatsAppBroadcast}
+                  className="flex-1 flex items-center justify-center space-x-2 py-2 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-black font-bold text-xs shadow-md transition-all"
+                >
+                  <PhoneCall className="w-3.5 h-3.5" />
+                  <span>Broadcast on WhatsApp</span>
+                </button>
+                <button
+                  onClick={handleCopyPromoText}
+                  className="px-3.5 py-2 rounded-xl bg-[#161c28] hover:bg-[#202838] border border-white/10 text-xs font-mono text-slate-200 transition-colors flex items-center space-x-1.5"
+                  title="Copy pre-formatted promotional message"
+                >
+                  {copiedPromo ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedPromo ? "Copied" : "Copy Promo"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Option 3: Export Standalone Storefront Code */}
+            <div className="p-4 rounded-2xl bg-[#121622] border border-purple-500/30 space-y-2.5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center space-x-1.5">
+                  <Terminal className="w-4 h-4 text-purple-400" />
+                  <span>Option 3: Export Standalone Storefront Code</span>
+                </span>
+                <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono font-bold">
+                  Muse Code AST
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Download only the synthesized storefront code bundle (<code className="text-purple-300 font-mono text-[10px]">app/page.tsx</code>, <code className="text-purple-300 font-mono text-[10px]">checkout/route.ts</code>) without your backend repository.
+              </p>
+              <button
+                onClick={handleDownloadCode}
+                className="w-full flex items-center justify-center space-x-2 py-2 rounded-xl bg-[#1c2234] hover:bg-[#252e47] border border-purple-500/40 text-purple-200 font-bold text-xs shadow-sm transition-all"
               >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 1155 1000" fill="currentColor">
-                  <path d="m577.3 0 577.4 1000H0z" />
-                </svg>
-                <span>Deploy to Vercel (1-Click)</span>
-              </a>
+                <Download className="w-3.5 h-3.5 text-purple-400" />
+                <span>Download Storefront Code Bundle (.json)</span>
+              </button>
             </div>
 
             <div className="text-center pt-1">
