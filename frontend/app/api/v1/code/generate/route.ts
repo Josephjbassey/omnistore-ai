@@ -12,7 +12,10 @@ export async function POST(req: Request) {
   const storeName = schema.store_name || "Mama Cass Market";
   const whatsapp = schema.whatsapp_number || "+2348012345678";
   const slug = storeName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://omnistore-sandy.vercel.app";
+  let appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://omnistore-sandy.vercel.app").trim().replace(/\/+$/, "");
+  if (!appUrl.startsWith("http://") && !appUrl.startsWith("https://")) {
+    appUrl = `https://${appUrl}`;
+  }
 
   return NextResponse.json({
     success: true,

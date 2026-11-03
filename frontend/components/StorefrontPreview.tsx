@@ -49,7 +49,7 @@ export const StorefrontPreview: React.FC<StorefrontPreviewProps> = ({
     : "lagos-produce";
 
   // Real live working storefront URL on this application
-  const realStoreUrl = `${getAppUrl()}/store/${storeSlug}`;
+  const realStoreUrl = resolveStorefrontUrl(codeResponse?.preview_url || `/store/${storeSlug}`);
 
   // Real 1-Click Vercel Deploy URL for GitHub repo
   const vercelDeployUrl = `https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FJosephjbassey%2Fomnistore-ai&project-name=omnistore-storefront&repository-name=omnistore-storefront`;

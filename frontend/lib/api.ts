@@ -20,32 +20,54 @@ export const getApiBaseUrl = (): string => {
 export const API_BASE_URL = getApiBaseUrl();
 
 export const getAppUrl = (): string => {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
+  let url = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (url) {
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      url = url.includes("localhost") || url.includes("127.0.0.1")
+        ? `http://${url}`
+        : `https://${url}`;
+    }
+    return url.replace(/\/+$/, "");
   }
   if (typeof window !== "undefined" && window.location.origin) {
-    return window.location.origin;
+    return window.location.origin.replace(/\/+$/, "");
   }
   return "https://omnistore-sandy.vercel.app";
 };
 
 export const resolveStorefrontUrl = (slugOrUrl?: string): string => {
   const base = getAppUrl();
-  if (!slugOrUrl) return `${base}/store/demo`;
-  if (slugOrUrl.startsWith("http://") || slugOrUrl.startsWith("https://")) {
-    // If it points to an external or hardcoded demo domain, map it dynamically to NEXT_PUBLIC_APP_URL
-    if (slugOrUrl.includes("omnistore-demo.vercel.app") || slugOrUrl.includes("example.com")) {
-      try {
-        const parsed = new URL(slugOrUrl);
-        return `${base}${parsed.pathname}`;
-      } catch {
-        return slugOrUrl;
-      }
+  if (!slugOrUrl || !slugOrUrl.trim()) return `${base}/store/demo`;
+
+  let str = slugOrUrl.trim();
+
+  // 1. If already an absolute URL with protocol
+  if (str.startsWith("http://") || str.startsWith("https://")) {
+    try {
+      const parsed = new URL(str);
+      let p = parsed.pathname.replace(/^\/?[a-zA-Z0-9-]+\.vercel\.app\/?/, "/");
+      p = p.replace(/^\/?[a-zA-Z0-9-]+\.vercel\.app\/?/, "/");
+      if (!p.startsWith("/store/")) p = `/store/${p.replace(/^\/+/, "")}`;
+      return `${base}${p.replace(/\/+/g, "/")}`;
+    } catch {
+      // Fallback
     }
-    return slugOrUrl;
   }
-  const cleanPath = slugOrUrl.startsWith("/") ? slugOrUrl : `/${slugOrUrl}`;
-  return `${base}${cleanPath}`;
+
+  // 2. If it starts with a domain name like "omnistore-sandy.vercel.app/store/..."
+  if (str.includes("vercel.app") || str.includes("localhost")) {
+    let p = str.replace(/^[a-zA-Z0-9.-]+\.[a-z]{2,}\/?/, "/");
+    p = p.replace(/^[a-zA-Z0-9.-]+:\d+\/?/, "/");
+    if (!p.startsWith("/store/")) p = `/store/${p.replace(/^\/+/, "")}`;
+    return `${base}${p.replace(/\/+/g, "/")}`;
+  }
+
+  // 3. Pure relative path or bare slug
+  let clean = str.replace(/^\/+/, "");
+  if (!clean.startsWith("store/")) {
+    clean = `store/${clean}`;
+  }
+  return `${base}/${clean}`;
 };
 
 // ─── Meta Model API Key Storage & Headers ───────────────────────────────────

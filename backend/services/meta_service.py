@@ -464,7 +464,9 @@ class MetaModelService:
             os.getenv("NEXT_PUBLIC_APP_URL")
             or os.getenv("APP_URL")
             or "https://omnistore-sandy.vercel.app"
-        ).rstrip("/")
+        ).strip().rstrip("/")
+        if not app_base.startswith("http://") and not app_base.startswith("https://"):
+            app_base = f"https://{app_base}"
         store_slug = schema.store_title.lower().replace(" ", "-").replace("'", "")
         preview_url = f"{app_base}/store/{store_slug}"
 
