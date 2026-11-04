@@ -9,6 +9,47 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        terracotta: {
+          DEFAULT: "#c1793f",
+          50: "#fbf6f0",
+          100: "#f6ede1",
+          200: "#eed8c3",
+          300: "#e4bea1",
+          400: "#d68749",
+          500: "#c1793f",
+          600: "#a9622f",
+          700: "#884a24",
+          800: "#6d3a20",
+          900: "#552f1c",
+        },
+        sand: {
+          DEFAULT: "#cab695",
+          100: "#f7f4ee",
+          200: "#ede7da",
+          300: "#dfd4c0",
+          400: "#cab695",
+          500: "#b59e78",
+          600: "#9f865f",
+          700: "#7e6949",
+        },
+        slateteal: {
+          DEFAULT: "#526569",
+          light: "#708488",
+          dark: "#3a494c",
+        },
+        olive: {
+          DEFAULT: "#788166",
+        },
+        crimson: {
+          DEFAULT: "#975151",
+        },
+        wine: {
+          DEFAULT: "#6a3f49",
+        },
+        whatsapp: {
+          DEFAULT: "#25D366",
+          dark: "#20ba59",
+        },
         obsidian: {
           950: "#06080b",
           900: "#090b0e",

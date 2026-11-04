@@ -78,7 +78,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     }
   }, [externalSelectedBoxId]);
 
-  // Sync segmentData when preset or stallImageUrl changes (unless user explicitly uploaded a custom image)
+  // Sync segmentData when preset or stallImageUrl changes
   useEffect(() => {
     if (presetBoxes && presetBoxes.length > 0 && !customImage) {
       setSegmentData({
@@ -147,7 +147,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     }
   }, [executeFullScan, presetBoxes, segmentData]);
 
-  // Handle client-side image optimization for slow 3G African mobile networks
+  // Handle client-side image optimization
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -162,8 +162,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       });
       setCustomImage(optimized.dataUrl);
       executeFullScan(optimized.dataUrl);
-    } catch (err) {
-      console.warn("Compression fallback, using standard FileReader:", err);
+    } catch {
       const reader = new FileReader();
       reader.onload = (event) => {
         const b64 = event.target?.result as string;
@@ -195,7 +194,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     }
   };
 
-  // Draw SAM 3.1 Overlays on HTML5 Canvas over REAL stall photography
+  // Draw SAM 3.1 Overlays on HTML5 Canvas in Judge Mode only
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -205,7 +204,6 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!segmentData) return;
 
-    // In Store Owner Mode: Hide raw bounding box overlays, coordinates, confidence tags; show clean photo preview
     if (viewMode === "merchant") {
       return;
     }
@@ -222,37 +220,8 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
       ctx.save();
 
-      // If polygon mask exists, render polygon mask
-      if (box.polygon_mask && box.polygon_mask.length > 2) {
-        ctx.beginPath();
-        const firstPt = box.polygon_mask[0];
-        ctx.moveTo(firstPt[0] * canvas.width, firstPt[1] * canvas.height);
-        for (let i = 1; i < box.polygon_mask.length; i++) {
-          const pt = box.polygon_mask[i];
-          ctx.lineTo(pt[0] * canvas.width, pt[1] * canvas.height);
-        }
-        ctx.closePath();
-
-        // Polygon fill
-        ctx.fillStyle = isSelected
-          ? "rgba(16, 185, 129, 0.26)"
-          : isHovered
-          ? "rgba(56, 189, 248, 0.28)"
-          : "rgba(56, 189, 248, 0.10)";
-        ctx.fill();
-
-        // Polygon stroke
-        ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
-        ctx.strokeStyle = isSelected
-          ? "#10b981"
-          : isHovered
-          ? "#38bdf8"
-          : "rgba(56, 189, 248, 0.65)";
-        ctx.stroke();
-      }
-
-      // Draw refined rounded rectangle bounding box
-      const radius = 8;
+      // Rounded rectangle
+      const radius = 6;
       ctx.beginPath();
       ctx.moveTo(x + radius, y);
       ctx.lineTo(x + boxW - radius, y);
@@ -265,187 +234,103 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       ctx.quadraticCurveTo(x, y, x + radius, y);
       ctx.closePath();
 
-      // Translucent box fill
       ctx.fillStyle = isSelected
-        ? "rgba(16, 185, 129, 0.18)"
+        ? "rgba(193, 121, 63, 0.22)"
         : isHovered
-        ? "rgba(56, 189, 248, 0.22)"
-        : "rgba(14, 22, 36, 0.14)";
+        ? "rgba(82, 101, 105, 0.25)"
+        : "rgba(15, 20, 30, 0.15)";
       ctx.fill();
 
-      // Box stroke with subtle glow
-      ctx.lineWidth = isSelected ? 2.5 : isHovered ? 2 : 1.5;
-      if (isSelected) {
-        ctx.strokeStyle = "#10b981";
-        ctx.shadowColor = "rgba(16, 185, 129, 0.8)";
-        ctx.shadowBlur = 14;
-      } else if (isHovered) {
-        ctx.strokeStyle = "#38bdf8";
-        ctx.shadowColor = "rgba(56, 189, 248, 0.7)";
-        ctx.shadowBlur = 10;
-      } else {
-        ctx.strokeStyle = "rgba(56, 189, 248, 0.65)";
-        ctx.shadowBlur = 0;
-      }
-      ctx.stroke();
-
-      // Reset shadow for text tags
-      ctx.shadowBlur = 0;
-
-      // Corner crosshairs on selected item
-      if (isSelected) {
-        const arm = 12;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        // Top-left
-        ctx.beginPath();
-        ctx.moveTo(x, y + arm);
-        ctx.lineTo(x, y);
-        ctx.lineTo(x + arm, y);
-        ctx.stroke();
-        // Top-right
-        ctx.beginPath();
-        ctx.moveTo(x + boxW - arm, y);
-        ctx.lineTo(x + boxW, y);
-        ctx.lineTo(x + boxW, y + arm);
-        ctx.stroke();
-        // Bottom-left
-        ctx.beginPath();
-        ctx.moveTo(x, y + boxH - arm);
-        ctx.lineTo(x, y + boxH);
-        ctx.lineTo(x + arm, y + boxH);
-        ctx.stroke();
-        // Bottom-right
-        ctx.beginPath();
-        ctx.moveTo(x + boxW - arm, y + boxH);
-        ctx.lineTo(x + boxW, y + boxH);
-        ctx.lineTo(x + boxW, y + boxH - arm);
-        ctx.stroke();
-      }
-
-      // Floating Category & Confidence Tag
-      const labelText = `${box.label}`;
-      const confText = `${(box.confidence * 100).toFixed(0)}%`;
-      ctx.font = "600 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-      const labelMetrics = ctx.measureText(labelText);
-      ctx.font = "bold 10px ui-monospace, SFMono-Regular, monospace";
-      const confMetrics = ctx.measureText(confText);
-
-      const tagW = labelMetrics.width + confMetrics.width + 24;
-      const tagH = 22;
-      const tagY = Math.max(6, y - tagH - 4);
-      const tagX = Math.min(x, canvas.width - tagW - 8);
-
-      // Tag pill background with high contrast
-      ctx.beginPath();
-      const r = 6;
-      ctx.moveTo(tagX + r, tagY);
-      ctx.lineTo(tagX + tagW - r, tagY);
-      ctx.quadraticCurveTo(tagX + tagW, tagY, tagX + tagW, tagY + r);
-      ctx.lineTo(tagX + tagW, tagY + tagH - r);
-      ctx.quadraticCurveTo(tagX + tagW, tagY + tagH, tagX + tagW - r, tagY + tagH);
-      ctx.lineTo(tagX + r, tagY + tagH);
-      ctx.quadraticCurveTo(tagX, tagY + tagH, tagX, tagY + tagH - r);
-      ctx.lineTo(tagX, tagY + r);
-      ctx.quadraticCurveTo(tagX, tagY, tagX + r, tagY);
-      ctx.closePath();
-
-      ctx.fillStyle = isSelected
-        ? "rgba(6, 78, 59, 0.95)"
-        : isHovered
-        ? "rgba(7, 43, 74, 0.95)"
-        : "rgba(11, 17, 27, 0.92)";
-      ctx.fill();
-
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = isSelected
-        ? "#10b981"
-        : isHovered
-        ? "#38bdf8"
-        : "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = isSelected ? 2.5 : 1.5;
+      ctx.strokeStyle = isSelected ? "#c1793f" : "#526569";
       ctx.stroke();
 
       // Label text
-      ctx.font = "600 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-      ctx.fillStyle = isSelected ? "#ecfdf5" : isHovered ? "#f0f9ff" : "#f1f5f9";
-      ctx.fillText(labelText, tagX + 8, tagY + 15);
+      const labelText = `${box.label} (${(box.confidence * 100).toFixed(0)}%)`;
+      ctx.font = "600 11px -apple-system, sans-serif";
+      const metrics = ctx.measureText(labelText);
+      const tagW = metrics.width + 12;
+      const tagH = 20;
+      const tagY = Math.max(4, y - tagH - 2);
+      const tagX = Math.min(x, canvas.width - tagW - 4);
 
-      // Confidence badge
-      ctx.font = "bold 10px ui-monospace, SFMono-Regular, monospace";
-      ctx.fillStyle = isSelected ? "#34d399" : isHovered ? "#38bdf8" : "#94a3b8";
-      ctx.fillText(confText, tagX + labelMetrics.width + 14, tagY + 15);
+      ctx.fillStyle = isSelected ? "#c1793f" : "#1e2533";
+      ctx.fillRect(tagX, tagY, tagW, tagH);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(labelText, tagX + 6, tagY + 14);
 
       ctx.restore();
     });
   }, [segmentData, hoveredBoxId, selectedBoxId, viewMode]);
 
   return (
-    <div className="flex flex-col h-full bg-[#08090a] rounded-2xl border border-white/[0.08] p-4 sm:p-5 shadow-2xl backdrop-blur-md">
-      {/* Merchant Context Header */}
+    <div className="flex flex-col h-full bg-[#10141d] rounded-2xl border border-white/[0.08] p-4 sm:p-5 shadow-sm">
+      {/* Merchant Context Row (Store Details) */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5 pb-3.5 border-b border-white/[0.08]">
         <div>
-          <label className="text-[10px] uppercase font-mono text-zinc-400 block mb-1 font-semibold tracking-wider">
+          <label className="text-[10px] uppercase font-mono text-[#cab695] block mb-1 font-semibold tracking-wider">
             Store Name
           </label>
-          <div className="flex items-center space-x-2 bg-[#0f1117] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
-            <Store className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+          <div className="flex items-center space-x-2 bg-[#141924] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-[#c1793f] transition-colors">
+            <Store className="w-3.5 h-3.5 text-[#c1793f] flex-shrink-0" />
             <input
               type="text"
               value={merchantContext.store_name}
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, store_name: e.target.value })
               }
-              className="bg-transparent text-xs text-zinc-100 font-medium focus:outline-none w-full"
-              placeholder="e.g. Mama Cass Market"
+              className="bg-transparent text-xs text-white font-medium focus:outline-none w-full"
+              placeholder="Store Name"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase font-mono text-zinc-400 block mb-1 font-semibold tracking-wider">
-            Location
+          <label className="text-[10px] uppercase font-mono text-[#cab695] block mb-1 font-semibold tracking-wider">
+            Market Location
           </label>
-          <div className="flex items-center space-x-2 bg-[#0f1117] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
-            <MapPin className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+          <div className="flex items-center space-x-2 bg-[#141924] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-[#c1793f] transition-colors">
+            <MapPin className="w-3.5 h-3.5 text-[#526569] flex-shrink-0" />
             <input
               type="text"
               value={merchantContext.location}
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, location: e.target.value })
               }
-              className="bg-transparent text-xs text-zinc-100 font-medium focus:outline-none w-full"
-              placeholder="Akure, Nigeria"
+              className="bg-transparent text-xs text-white font-medium focus:outline-none w-full"
+              placeholder="e.g. Akure Market Hub"
             />
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase font-mono text-zinc-400 block mb-1 font-semibold tracking-wider">
+          <label className="text-[10px] uppercase font-mono text-[#cab695] block mb-1 font-semibold tracking-wider">
             Currency
           </label>
-          <div className="flex items-center space-x-2 bg-[#0f1117] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
-            <DollarSign className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+          <div className="flex items-center space-x-2 bg-[#141924] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-[#c1793f] transition-colors">
+            <DollarSign className="w-3.5 h-3.5 text-[#c1793f] flex-shrink-0" />
             <select
               value={merchantContext.currency}
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, currency: e.target.value })
               }
-              className="bg-transparent text-xs text-zinc-100 font-medium focus:outline-none w-full"
+              className="bg-transparent text-xs text-white font-medium focus:outline-none w-full"
             >
-              <option value="NGN" className="bg-[#0f1117]">NGN (₦ Naira)</option>
-              <option value="USD" className="bg-[#0f1117]">USD ($ Dollar)</option>
-              <option value="KES" className="bg-[#0f1117]">KES (KSh Shilling)</option>
-              <option value="GHS" className="bg-[#0f1117]">GHS (GH₵ Cedi)</option>
-              <option value="ZAR" className="bg-[#0f1117]">ZAR (R Rand)</option>
+              <option value="NGN" className="bg-[#141924]">NGN (₦ Naira)</option>
+              <option value="USD" className="bg-[#141924]">USD ($ Dollar)</option>
+              <option value="KES" className="bg-[#141924]">KES (KSh Shilling)</option>
+              <option value="GHS" className="bg-[#141924]">GHS (GH₵ Cedi)</option>
+              <option value="ZAR" className="bg-[#141924]">ZAR (R Rand)</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase font-mono text-zinc-400 block mb-1 font-semibold tracking-wider">
-            WhatsApp Checkout
+          <label className="text-[10px] uppercase font-mono text-[#cab695] block mb-1 font-semibold tracking-wider">
+            WhatsApp Order Line
           </label>
-          <div className="flex items-center space-x-2 bg-[#0f1117] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-emerald-500/60 transition-colors shadow-sm">
+          <div className="flex items-center space-x-2 bg-[#141924] border border-white/10 rounded-xl px-2.5 py-1.5 focus-within:border-[#25D366] transition-colors">
             <Phone className="w-3.5 h-3.5 text-[#25D366] flex-shrink-0" />
             <input
               type="text"
@@ -453,14 +338,14 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
               onChange={(e) =>
                 onUpdateMerchantContext({ ...merchantContext, whatsapp_number: e.target.value })
               }
-              className="bg-transparent text-xs text-zinc-100 focus:outline-none w-full font-mono font-medium"
+              className="bg-transparent text-xs text-white focus:outline-none w-full font-mono font-medium"
               placeholder="+2348012345678"
             />
           </div>
         </div>
       </div>
 
-      {/* Hidden File and Camera Inputs */}
+      {/* Hidden File Inputs */}
       <input
         type="file"
         ref={cameraInputRef}
@@ -481,182 +366,141 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3 py-3">
         {viewMode === "judge" ? (
           <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <h2 className="font-semibold text-xs text-zinc-200 uppercase tracking-wider font-mono flex items-center space-x-1.5">
-              <span>SAM 3.1 Visual Canvas</span>
-              <span className="text-[10px] text-cyan-400 lowercase font-normal">(real stall perception)</span>
+            <span className="w-2 h-2 rounded-full bg-[#c1793f] animate-pulse" />
+            <h2 className="font-semibold text-xs text-white uppercase tracking-wider font-mono">
+              SAM 3.1 Spatial Perception Canvas
             </h2>
           </div>
         ) : (
           <div className="flex items-center space-x-2">
-            <Camera className="w-4 h-4 text-emerald-400" />
-            <h2 className="font-semibold text-xs text-zinc-100 flex items-center space-x-1.5">
-              <span>Your Stall Photo</span>
-            </h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400">
-              Step 1: Snap
+            <Camera className="w-4 h-4 text-[#c1793f]" />
+            <h2 className="font-semibold text-xs text-white">Stall Photography</h2>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#182030] text-[#cab695] border border-white/10">
+              Live Shelf
             </span>
           </div>
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* African Mobile 3G Bandwidth Optimization Badge */}
           {compressionInfo && (
             <div
-              className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-950/60 border border-emerald-700/60 text-emerald-300 text-[10px] font-mono shadow-sm"
-              title="Client-side downsampling reduced mobile data usage"
+              className="flex items-center space-x-1 px-2.5 py-1 rounded-full bg-[#182030] border border-white/10 text-zinc-300 text-[10px] font-mono"
+              title="Optimized for African 3G Mobile Networks"
             >
-              <Wifi className="w-3 h-3 text-emerald-400" />
-              <span>3G Optimized: {compressionInfo.originalKb}KB → {compressionInfo.compressedKb}KB (-{compressionInfo.reduction}%)</span>
+              <Wifi className="w-3 h-3 text-[#10b981]" />
+              <span>3G Optimized: {compressionInfo.compressedKb}KB (-{compressionInfo.reduction}%)</span>
             </div>
           )}
 
           {customImage && (
             <button
               onClick={handleResetToPreset}
-              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-mono text-zinc-400 hover:text-white bg-[#141720] border border-white/10 hover:border-white/20 transition-all active:scale-[0.98]"
-              title="Reset to sample market preset photo"
+              className="flex items-center space-x-1 px-2.5 py-1.5 rounded-xl text-xs font-mono text-zinc-400 hover:text-white bg-[#141924] border border-white/10 transition-all active:scale-[0.98]"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Sample Photo</span>
+              <span>Reset</span>
             </button>
           )}
 
-          {viewMode === "merchant" ? (
-            <>
-              {/* Primary Mobile Camera Snap Trigger */}
-              <button
-                onClick={() => cameraInputRef.current?.click()}
-                disabled={isCompressing || isScanning}
-                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-[0.98] disabled:opacity-50"
-                title="Open device camera to snap stall picture"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                <span>{isCompressing ? "Optimizing..." : "Snap Stall Photo"}</span>
-              </button>
+          {/* Primary Mobile Camera Snap */}
+          <button
+            onClick={() => cameraInputRef.current?.click()}
+            disabled={isCompressing || isScanning}
+            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#c1793f] hover:bg-[#d68749] text-white shadow-sm transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span>{isCompressing ? "Optimizing..." : "Take Stall Photo"}</span>
+          </button>
 
-              {/* Upload Picture Fallback */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isCompressing || isScanning}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141720] hover:bg-[#1a202c] text-zinc-300 border border-white/10 transition-colors shadow-sm active:scale-[0.98] disabled:opacity-50"
-                title="Select existing photo from gallery"
-              >
-                <Upload className="w-3.5 h-3.5 text-zinc-400" />
-                <span>Upload Picture</span>
-              </button>
+          {/* Upload Fallback */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isCompressing || isScanning}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141924] hover:bg-[#1b2232] text-zinc-300 border border-white/10 transition-colors active:scale-[0.98] disabled:opacity-50"
+          >
+            <Upload className="w-3.5 h-3.5 text-zinc-400" />
+            <span>Upload Photo</span>
+          </button>
 
-              {/* Re-catalog Items CTA */}
-              <button
-                onClick={() => executeFullScan(customImage || undefined)}
-                disabled={isScanning || isCompressing}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161f2e] hover:bg-[#1d293d] text-emerald-300 border border-emerald-500/30 transition-colors shadow-sm disabled:opacity-50 active:scale-[0.98]"
-              >
-                <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
-                <span>{isScanning ? "Cataloging Items..." : "Catalog Items"}</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isCompressing || isScanning}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141720] hover:bg-[#1a202c] text-zinc-300 border border-white/10 transition-colors shadow-sm active:scale-[0.98] disabled:opacity-50"
-              >
-                <Upload className="w-3.5 h-3.5 text-zinc-400" />
-                <span>Upload Photo</span>
-              </button>
-
-              <button
-                onClick={() => executeFullScan(customImage || undefined)}
-                disabled={isScanning || isCompressing}
-                className="flex items-center space-x-2 px-4 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
-                <span>{isScanning ? "Extracting Spatial Masks..." : "1-Click Store Scan"}</span>
-              </button>
-            </>
-          )}
+          {/* Re-catalog Action */}
+          <button
+            onClick={() => executeFullScan(customImage || undefined)}
+            disabled={isScanning || isCompressing}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#182030] hover:bg-[#202b40] text-[#cab695] border border-[#c1793f]/30 transition-colors active:scale-[0.98] disabled:opacity-50"
+          >
+            <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
+            <span>{isScanning ? "Scanning..." : "Update Inventory"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Photographic Shelf & Interactive Canvas Viewport */}
-      <div className="relative flex-1 min-h-[360px] bg-[#050608] rounded-xl overflow-hidden border border-white/[0.08] flex items-center justify-center group shadow-inner">
-        {/* Render Real High-Resolution Stall Photography */}
+      {/* Main Photographic Shelf Viewport */}
+      <div className="relative flex-1 min-h-[360px] bg-[#07090e] rounded-xl overflow-hidden border border-white/[0.08] flex items-center justify-center shadow-inner">
         <img
           src={
             customImage ||
             stallImageUrl ||
             "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1280&q=80"
           }
-          alt={`${merchantContext.store_name} Market Stall`}
-          className="w-full h-full object-cover select-none brightness-[0.80] contrast-[1.08] pointer-events-none"
+          alt={`${merchantContext.store_name} Shelf`}
+          className="w-full h-full object-cover select-none brightness-[0.85] contrast-[1.05]"
         />
 
-        {/* Ambient Top Vignette */}
-        <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-[#08090a]/80 to-transparent pointer-events-none z-0" />
-        <div className="absolute top-3 left-4 flex items-center space-x-2 z-10 pointer-events-none">
-          <span className="px-2.5 py-0.5 rounded-md bg-[#08090a]/85 border border-white/15 text-[11px] font-mono text-emerald-300 font-semibold backdrop-blur-md">
-            {merchantContext.store_name} · {viewMode === "judge" ? "Real Stall Frame #042" : "Current Stall View"}
+        <div className="absolute top-3 left-3 flex items-center space-x-2 z-10 pointer-events-none">
+          <span className="px-2.5 py-0.5 rounded-md bg-[#090b10]/90 border border-white/10 text-[11px] font-mono text-[#cab695] font-semibold backdrop-blur-md">
+            {merchantContext.store_name} · Current Display
           </span>
         </div>
 
-        {/* Interactive SAM 3.1 Bounding Box Canvas with 100% Click-to-Reason */}
-        <canvas
-          ref={canvasRef}
-          width={1280}
-          height={720}
-          className="absolute inset-0 w-full h-full object-contain cursor-crosshair z-10"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const clickX = (e.clientX - rect.left) / rect.width;
-            const clickY = (e.clientY - rect.top) / rect.height;
+        {/* Interactive Canvas in Judge Mode */}
+        {viewMode === "judge" && (
+          <canvas
+            ref={canvasRef}
+            width={1280}
+            height={720}
+            className="absolute inset-0 w-full h-full object-contain cursor-crosshair z-10"
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const clickX = (e.clientX - rect.left) / rect.width;
+              const clickY = (e.clientY - rect.top) / rect.height;
 
-            if (segmentData) {
-              const clicked = segmentData.bounding_boxes.find((b) => {
-                const [ymin, xmin, ymax, xmax] = b.bbox;
-                return clickX >= xmin && clickX <= xmax && clickY >= ymin && clickY <= ymax;
-              });
-              if (clicked) {
-                setInternalSelectedBoxId(clicked.box_id);
-                onSelectBox(clicked);
+              if (segmentData) {
+                const clicked = segmentData.bounding_boxes.find((b) => {
+                  const [ymin, xmin, ymax, xmax] = b.bbox;
+                  return clickX >= xmin && clickX <= xmax && clickY >= ymin && clickY <= ymax;
+                });
+                if (clicked) {
+                  setInternalSelectedBoxId(clicked.box_id);
+                  onSelectBox(clicked);
+                }
               }
-            }
-          }}
-          onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            const x = (e.clientX - rect.left) / rect.width;
-            const y = (e.clientY - rect.top) / rect.height;
+            }}
+            onMouseMove={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const x = (e.clientX - rect.left) / rect.width;
+              const y = (e.clientY - rect.top) / rect.height;
 
-            if (segmentData) {
-              const hovered = segmentData.bounding_boxes.find((b) => {
-                const [ymin, xmin, ymax, xmax] = b.bbox;
-                return x >= xmin && x <= xmax && y >= ymin && y <= ymax;
-              });
-              setHoveredBoxId(hovered ? hovered.box_id : null);
-            }
-          }}
-          onMouseLeave={() => setHoveredBoxId(null)}
-        />
+              if (segmentData) {
+                const hovered = segmentData.bounding_boxes.find((b) => {
+                  const [ymin, xmin, ymax, xmax] = b.bbox;
+                  return x >= xmin && x <= xmax && y >= ymin && y <= ymax;
+                });
+                setHoveredBoxId(hovered ? hovered.box_id : null);
+              }
+            }}
+            onMouseLeave={() => setHoveredBoxId(null)}
+          />
+        )}
       </div>
 
-      {/* Segment Selector Quick Strip (With Real Product Thumbnails) */}
+      {/* Detected Goods Strip */}
       {segmentData && segmentData.bounding_boxes.length > 0 && (
         <div className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          {viewMode === "judge" ? (
-            <div className="flex items-center space-x-1.5 text-[11px] font-mono text-zinc-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span>Detected:</span>
-              <span className="text-white font-bold">{segmentData.bounding_boxes.length} SKUs</span>
-              <span className="text-zinc-500">· click to inspect cognitive reasoning</span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-1.5 text-xs text-zinc-300">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="font-semibold text-white">Detected Goods ({segmentData.bounding_boxes.length})</span>
-              <span className="text-zinc-500 text-[11px]">· select to view:</span>
-            </div>
-          )}
+          <div className="flex items-center space-x-1.5 text-xs text-zinc-300">
+            <span className="w-2 h-2 rounded-full bg-[#10b981]" />
+            <span className="font-semibold text-white">Cataloged Items ({segmentData.bounding_boxes.length})</span>
+            <span className="text-zinc-500 text-[11px]">· select to inspect:</span>
+          </div>
 
           <div className="flex items-center space-x-1.5 overflow-x-auto py-0.5 no-scrollbar">
             {segmentData.bounding_boxes.map((box) => {
@@ -671,8 +515,8 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
                   }}
                   className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all flex items-center space-x-2 whitespace-nowrap active:scale-[0.98] ${
                     isSelected
-                      ? "bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-sm"
-                      : "bg-[#121622] text-zinc-300 border-white/10 hover:border-white/25 hover:text-white"
+                      ? "bg-[#c1793f] text-white font-bold border-[#c1793f] shadow-sm"
+                      : "bg-[#141924] text-zinc-300 border-white/10 hover:border-white/25 hover:text-white"
                   }`}
                 >
                   {thumbUrl && (
@@ -684,11 +528,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
                   )}
                   <span>{box.label}</span>
                   {viewMode === "judge" && (
-                    <span
-                      className={`text-[10px] font-mono ${
-                        isSelected ? "text-slate-900" : "text-emerald-400"
-                      }`}
-                    >
+                    <span className="text-[10px] font-mono text-[#cab695]">
                       {(box.confidence * 100).toFixed(0)}%
                     </span>
                   )}

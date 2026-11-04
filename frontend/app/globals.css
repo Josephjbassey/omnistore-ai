@@ -2,61 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── DESIGN SYSTEM TOKENS ──────────────────────────────────────────────────
-   OmniStore AI — Linear dark-mode canvas + Vercel shadow-as-border
-   Tokens are single source of truth. Every component below consumes them.
-   No random colors, no arbitrary spacing. —end──────────────────────────────*/
+/* ─── AUTHENTIC COMMERCE DESIGN TOKENS ──────────────────────────────────────────
+   OmniStore AI — Culturally Grounded African Micro-Commerce Engine
+   Palette calibrated with terracotta earth, warm sand, slate teal & WhatsApp green.
+   Anti-AI slop: no purple/neon mesh gradients, no fake metrics, no glowing halos.
+   ─────────────────────────────────────────────────────────────────────────────*/
 :root {
-  /* Surfaces (Linear dark-mode-native) */
-  --bg: #08090a;            /* Marketing Black — page canvas */
-  --surface: #0f1011;       /* Panel Dark — sidebars, panels */
-  --surface-raised: #191a1b;/* Level 3 — cards, elevated surfaces */
-  --surface-hover: #28282c; /* Lightest dark surface — hover states */
+  /* Surfaces */
+  --bg: #090b10;            /* Warm Obsidian Black canvas */
+  --surface: #10141d;       /* Main panel surface */
+  --surface-raised: #161c28;/* Elevated cards & dropdowns */
+  --surface-hover: #1f2738; /* Interactive hover surface */
 
-  /* Text (Linear achromatic text scale) */
-  --text-primary: #f7f8f8;  /* Primary text — near-white, never pure #fff */
-  --text-secondary: #d0d6e0;/* Silver gray — body/descriptions */
-  --text-tertiary: #8a8f98; /* Muted gray — metadata, labels */
-  --text-quaternary: #62666d;/* Most subdued — timestamps, disabled */
+  /* Text Scale */
+  --text-primary: #f7f8f9;  /* Primary text — crisp warm white */
+  --text-secondary: #cdd4dc;/* Silver gray — product descriptions */
+  --text-tertiary: #8b95a2; /* Muted gray — metadata, labels */
+  --text-quaternary: #5e6875;/* Subtle timestamps & disabled */
 
-  /* Brand (emerald = OmniStore, used sparingly like Linear's indigo) */
-  --brand: #10b981;         /* Primary brand — CTAs only */
-  --brand-hover: #34d399;   /* Hover state */
-  --brand-glow: rgba(16, 185, 129, 0.18);
+  /* Brand Palette (From Inspiration Identity) */
+  --brand-terracotta: #c1793f; /* Primary warm earth / spice amber */
+  --brand-sand: #cab695;       /* Warm sand ochre — price pills & borders */
+  --brand-slate-teal: #526569; /* Deep slate teal — location & structure */
+  --brand-olive: #788166;      /* Olive sage — stock abundance */
+  --brand-crimson: #975151;    /* Crimson rust — alert & staple */
+  --brand-plum: #6a3f49;       /* Deep wine — judge mode accent */
+  --brand-whatsapp: #25D366;   /* WhatsApp checkout green */
+  --brand-emerald: #10b981;    /* Secondary success green */
 
-  /* Border (semi-transparent white, whisper-thin — never solid dark) */
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-standard: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  /* Structural Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-standard: rgba(255, 255, 255, 0.09);
+  --border-warm: rgba(202, 182, 149, 0.18);
+  --border-terracotta: rgba(193, 121, 63, 0.35);
 
-  /* Shadow (Vercel shadow-as-border + Linear luminance stacking) */
-  --shadow-border: 0px 0px 0px 1px rgba(255, 255, 255, 0.08);
-  --shadow-surface: 0px 0px 0px 1px rgba(255, 255, 255, 0.05);
-  --shadow-elevated: 0px 2px 4px -1px rgba(0, 0, 0, 0.4);
-  --shadow-focus: 0px 0px 0px 2px rgba(16, 185, 129, 0.4);
+  /* Shadows (Subtle, diffused, no neon halos) */
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-floating: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-btn: 0 2px 8px rgba(0, 0, 0, 0.25);
 
-  /* Radius scale (Linear) */
-  --radius-micro: 2px;
-  --radius-small: 4px;
-  --radius-comfortable: 6px;
-  --radius-card: 8px;
-  --radius-panel: 12px;
-  --radius-pill: 9999px;
+  /* Radii Scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 }
 
-/* ─── BASE ──────────────────────────────────────────────────────────────────*/
+/* ─── BASE STYLES ───────────────────────────────────────────────────────────*/
 html {
   scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family:
-    'Geist', 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, sans-serif;
-  font-feature-settings: 'cv01', 'ss03', 'liga';
-  letter-spacing: -0.01em;
+  font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.012em;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -66,305 +69,109 @@ body {
   box-sizing: border-box;
 }
 
-/* Selection highlight uses brand */
 ::selection {
-  background: var(--brand);
-  color: #06110d;
+  background: var(--brand-terracotta);
+  color: #ffffff;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 510;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: -0.025em;
   color: var(--text-primary);
-  line-height: 1.15;
+  line-height: 1.2;
 }
-
-h1 { font-size: 2rem; letter-spacing: -0.03em; }
-h2 { font-size: 1.5rem; letter-spacing: -0.025em; }
-h3 { font-size: 1.25rem; letter-spacing: -0.02em; }
 
 p {
   color: var(--text-secondary);
   line-height: 1.6;
-  letter-spacing: -0.01em;
 }
 
-/* Tabular figures for currency/numbers */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
 
-/* Mono stack for technical labels */
 .font-mono {
-  font-family:
-    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-feature-settings: 'liga', 'tnum';
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-/* ─── SHADOW-AS-BORDER (Vercel technique) ───────────────────────────────────*/
-.border-ring {
-  box-shadow: var(--shadow-border);
+/* ─── REAL COMMERCE BUTTONS ────────────────────────────────────────────────*/
+.btn-terracotta {
+  @apply inline-flex items-center justify-center font-bold transition-all duration-150 active:scale-[0.98];
+  background: #c1793f;
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 10px rgba(193, 121, 63, 0.25);
+}
+.btn-terracotta:hover:not(:disabled) {
+  background: #d68749;
 }
 
-.border-ring-hover:hover {
-  box-shadow: var(--shadow-border), 0px 0px 0px 1px rgba(255, 255, 255, 0.16);
+.btn-whatsapp {
+  @apply inline-flex items-center justify-center font-bold text-black transition-all duration-150 active:scale-[0.98];
+  background: #25D366;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.25);
+}
+.btn-whatsapp:hover:not(:disabled) {
+  background: #20ba59;
 }
 
-/* ─── SURFACE ELEVATION (Linear luminance stacking) ─────────────────────────*/
-.surface {
-  background: var(--surface);
-  border: var(--shadow-surface);
-  border-radius: var(--radius-card);
-}
-
-.surface-raised {
-  background: var(--surface-raised);
-  border: var(--shadow-border);
-  border-radius: var(--radius-panel);
-}
-
-.surface-hover:hover {
-  background: var(--surface-hover);
-}
-
-/* ─── BUTTONS ───────────────────────────────────────────────────────────────*/
-.btn-primary {
-  @apply inline-flex items-center justify-center rounded-comfortable px-4 py-2 text-sm font-semibold text-slate-950 transition-all duration-150 active:scale-95;
-  background: linear-gradient(135deg, var(--brand) 0%, #059669 100%);
-  color: #06110d;
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, var(--brand-hover) 0%, var(--brand) 100%);
-  box-shadow: 0 0 28px rgba(16, 185, 129, 0.45);
-  transform: translateY(-1px);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn-ghost {
-  @apply inline-flex items-center justify-center rounded-comfortable px-4 py-2 text-sm font-medium text-slate-200 transition-all duration-150 active:scale-95;
-  background: rgba(255, 255, 255, 0.02);
-  border: var(--shadow-surface);
-}
-
-.btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
-  color: var(--text-primary);
-}
-
-.btn-icon {
-  @apply flex items-center justify-center rounded-circle p-1.5 transition-all duration-150;
-  background: rgba(255, 255, 255, 0.03);
-  border: var(--shadow-subtle);
-  color: var(--text-secondary);
-}
-
-.btn-icon:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-}
-
-.rounded-comfortable { border-radius: var(--radius-comfortable); }
-.rounded-card { border-radius: var(--radius-card); }
-.rounded-panel { border-radius: var(--radius-panel); }
-.rounded-pill { border-radius: var(--radius-pill); }
-.rounded-circle { border-radius: var(--radius-pill); }
-
-/* ─── INPUTS & FORMS ────────────────────────────────────────────────────────*/
-.input-field {
-  @apply block w-full rounded-comfortable border-none px-3 py-2 text-sm text-slate-200 transition-all duration-150 focus:outline-none;
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: var(--shadow-surface);
-  color: var(--text-primary);
-}
-
-.input-field::placeholder {
-  color: var(--text-tertiary);
-}
-
-.input-field:focus {
-  background: rgba(255, 255, 255, 0.04);
-  box-shadow: var(--shadow-border), var(--shadow-focus);
-}
-
-.input-label {
-  @apply block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5;
-  color: var(--text-tertiary);
-}
-
-/* ─── CARDS ─────────────────────────────────────────────────────────────────*/
-.card {
-  @apply p-5 transition-all duration-200;
-  background: rgba(255, 255, 255, 0.02);
-  box-shadow: var(--shadow-border);
-  border-radius: var(--radius-card);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-border), 0px 0px 0px 1px rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
-}
-
-/* ─── BADGES & PILLS ────────────────────────────────────────────────────────*/
-.badge {
-  @apply inline-flex items-center rounded-pill px-3 py-0.5 text-[10px] font-medium transition-colors;
-  background: transparent;
-  border: 1px solid rgb(35, 37, 42);
-  color: var(--text-secondary);
-}
-
-.badge-brand {
-  background: var(--brand);
-  color: #06110d;
-  border-color: transparent;
-}
-
-.badge-emerald {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #34d399;
-}
-
-.badge-cyan {
-  background: rgba(56, 189, 248, 0.12);
-  border-color: rgba(56, 189, 248, 0.3);
-  color: #67e8f9;
-}
-
-/* ─── ANIMATIONS ────────────────────────────────────────────────────────────*/
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease both;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
-  transform: translateX(-100%);
-  animation: shimmer 2.5s infinite;
-}
-
-/* ─── LOGO MARK ─────────────────────────────────────────────────────────────*/
-.logomark {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-comfortable);
-  background: linear-gradient(135deg, var(--brand) 0%, #059669 100%);
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
-}
-
-/* ─── STAGGERED CHILD ANIMATIONS ───────────────────────────────────────────*/
-.stagger-child > * {
-  opacity: 0;
-  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.stagger-child > *:nth-child(1) { animation-delay: 0.05s; }
-.stagger-child > *:nth-child(2) { animation-delay: 0.1s; }
-.stagger-child > *:nth-child(3) { animation-delay: 0.15s; }
-.stagger-child > *:nth-child(4) { animation-delay: 0.2s; }
-.stagger-child > *:nth-child(5) { animation-delay: 0.25s; }
-
-/* Shadow glow utilities (referenced by components) */
-.shadow-glow-emerald {
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.35);
-}
-
-.shadow-glow-purple {
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35);
-}
-
-/* Commanding Primary Action Buttons */
 .btn-command-emerald {
-  position: relative;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #06110d;
-  font-weight: 700;
-  box-shadow: 0 0 24px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  @apply inline-flex items-center justify-center font-bold text-slate-950 transition-all duration-150 active:scale-[0.98];
+  background: #10b981;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
 }
-
 .btn-command-emerald:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  box-shadow: 0 0 32px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
-}
-
-.btn-command-emerald:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+  background: #34d399;
 }
 
 .btn-command-purple {
-  position: relative;
-  background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 0 24px rgba(168, 85, 247, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  @apply inline-flex items-center justify-center font-bold text-white transition-all duration-150 active:scale-[0.98];
+  background: #6a3f49;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
 }
-
 .btn-command-purple:hover:not(:disabled) {
-  background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%);
-  box-shadow: 0 0 32px rgba(168, 85, 247, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transform: translateY(-1px);
+  background: #7d4b57;
 }
 
-.btn-command-purple:active:not(:disabled) {
-  transform: translateY(1px);
+.shadow-glow-emerald {
+  box-shadow: 0 2px 14px rgba(16, 185, 129, 0.2);
 }
 
-.text-balance { text-wrap: balance; }
-.overflow-marquee { overflow: hidden; }
+.shadow-glow-purple {
+  box-shadow: 0 2px 14px rgba(106, 63, 73, 0.3);
+}
+
+/* ─── CLEAN E-COMMERCE CARDS ────────────────────────────────────────────────*/
+.card-commerce {
+  background: #10141d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
+}
+.card-commerce:hover {
+  border-color: rgba(202, 182, 149, 0.25);
+  background: #131824;
+}
+
+/* ─── ANIMATIONS ────────────────────────────────────────────────────────────*/
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Hide scrollbars cleanly */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

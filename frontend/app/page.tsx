@@ -307,8 +307,8 @@ export default function Home() {
   const segmentsCount = selectedBox ? (storeSchema?.inventory?.length || 6) : 6;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#08090a] text-zinc-100 selection:bg-emerald-500 selection:text-slate-950">
-      {/* Floating Glassmorphic Header & Dual Mode Switcher */}
+    <div className="flex flex-col min-h-screen bg-[#090b10] text-[#f7f8f9] selection:bg-[#c1793f] selection:text-white">
+      {/* Floating Single Header & Dual Mode Switcher */}
       <ModeToggleHeader
         viewMode={viewMode}
         onToggleViewMode={setViewMode}
@@ -321,48 +321,57 @@ export default function Home() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* Auth Bar */}
+        {/* Merchant Account & Store Status Bar */}
         {isLoading ? null : (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0e1118]/80 border border-white/[0.08] rounded-2xl p-3.5 sm:p-4 mb-4 backdrop-blur-md shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#10141d] border border-white/[0.08] rounded-2xl p-3 sm:p-4 backdrop-blur-md shadow-sm">
             {isAuthenticated && user ? (
               <>
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 bg-[#141722] border border-white/10 rounded-xl px-2.5 py-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span className="text-xs font-semibold text-zinc-200">{user.full_name}</span>
+                  <div className="flex items-center space-x-2 bg-[#161c28] border border-[#cab695]/20 rounded-xl px-3 py-1">
+                    <span className="w-2 h-2 rounded-full bg-[#25D366]" />
+                    <span className="text-xs font-semibold text-[#f7f8f9]">{user.full_name}</span>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">{user.role}</span>
+                  <span className="text-[11px] font-mono text-[#cab695] uppercase tracking-wider font-semibold">
+                    {merchantContext.store_name} · {merchantContext.location}
+                  </span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => router.push("/")}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all active:scale-[0.98]"
+                    onClick={() => setActiveTab("storefront")}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#c1793f] hover:bg-[#d68749] text-white shadow-sm transition-all active:scale-[0.98]"
                   >
-                    Publish Store
+                    View Live Storefront
                   </button>
                   <button
                     onClick={logout}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#141722] hover:bg-[#1c2130] text-zinc-300 border border-white/10 transition-all active:scale-[0.98]"
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161c28] hover:bg-[#1f2738] text-zinc-300 border border-white/10 transition-all active:scale-[0.98]"
                   >
                     Sign out
                   </button>
                 </div>
               </>
             ) : (
-              <div className="flex items-center justify-between w-full text-xs font-medium text-zinc-400">
-                <span className="text-zinc-400 font-mono text-[11px]">OmniStore Cloud Session · Guest Mode</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2 text-xs font-medium text-zinc-300">
+                <div className="flex items-center space-x-2">
+                  <span className="w-2 h-2 rounded-full bg-[#c1793f]" />
+                  <span className="font-semibold text-[#f7f8f9]">Merchant Studio</span>
+                  <span className="text-zinc-500">·</span>
+                  <span className="text-zinc-400 font-mono text-[11px]">
+                    Active Stall: {merchantContext.store_name} ({merchantContext.location})
+                  </span>
+                </div>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => router.push("/auth/login")}
-                    className="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all active:scale-[0.98]"
+                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161c28] hover:bg-[#1f2738] text-zinc-200 border border-white/10 transition-all active:scale-[0.98]"
                   >
                     Sign in
                   </button>
                   <button
                     onClick={() => router.push("/auth/register")}
-                    className="px-3 py-1.5 rounded-xl text-xs font-medium bg-[#141722] hover:bg-white/5 text-emerald-400 border border-emerald-500/30 transition-all active:scale-[0.98]"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#c1793f] hover:bg-[#d68749] text-white shadow-sm transition-all active:scale-[0.98]"
                   >
-                    Create account
+                    Create Merchant Account
                   </button>
                 </div>
               </div>
@@ -373,31 +382,31 @@ export default function Home() {
         {/* HERO SECTION: Tailored based on View Mode */}
         {viewMode === "merchant" ? (
           /* Merchant / Store Owner Experience Header */
-          <div className="rounded-2xl p-5 sm:p-6 relative overflow-hidden bg-gradient-to-b from-[#0f121a] to-[#0a0c12] border border-white/[0.08] shadow-2xl">
-            {/* Subtle radial ambient glow */}
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="rounded-2xl p-5 sm:p-6 relative overflow-hidden bg-[#10141d] border border-[#cab695]/20 shadow-xl">
+            {/* Subtle warm ambient glow */}
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#c1793f]/10 rounded-full blur-3xl pointer-events-none" />
 
             <div className="max-w-3xl space-y-2.5 relative z-10">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-emerald-300 text-[11px] font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>3-Step Merchant Flow: 1. Photo → 2. AI Pricing → 3. WhatsApp Store</span>
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#1c1613] border border-[#c1793f]/30 text-[#e4bea1] text-[11px] font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#c1793f] animate-pulse" />
+                <span>Instant Market Stall Digitization &amp; WhatsApp Checkout</span>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white leading-tight">
-                Turn any market stall or kiosk into an online store in seconds.
+                Turn your physical stall into an online WhatsApp store in seconds.
               </h1>
-              <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-2xl font-normal">
-                Built for small market stall merchants and informal traders who operate without barcodes or desktop POS terminals. Our intelligent camera auto-catalogs products from your photo, sets fair market pricing in local currency (NGN ₦), and launches a mobile store with direct WhatsApp checkout.
+              <p className="text-xs sm:text-sm text-[#cdd4dc] leading-relaxed max-w-2xl font-normal">
+                Designed for market stall vendors and neighborhood retailers. Simply snap a photo of your stall shelf: our AI detects your products, sets fair market prices in your local currency ({merchantContext.currency}), and creates a mobile store ready to receive customer orders on WhatsApp.
               </p>
             </div>
 
             {/* Quick 1-Click Preset Switcher */}
             <div className="mt-5 pt-4 border-t border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
               <div className="flex items-center space-x-2">
-                <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider font-mono">
+                <span className="text-[11px] font-semibold text-[#cab695] uppercase tracking-wider font-mono">
                   Sample Market Stalls:
                 </span>
-                <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">
-                  (select to test zero-shot detection)
+                <span className="text-[10px] text-zinc-500 hidden sm:inline">
+                  (select a demo stall or upload your own photo below)
                 </span>
               </div>
 
@@ -408,8 +417,8 @@ export default function Home() {
                     onClick={() => handleSelectPreset(preset)}
                     className={`text-xs px-3.5 py-1.5 rounded-xl border transition-all flex items-center space-x-1.5 font-medium active:scale-[0.98] ${
                       activePreset.id === preset.id
-                        ? "bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                        : "bg-[#11141c] text-zinc-300 border-white/10 hover:border-white/25 hover:bg-[#181d28]"
+                        ? "bg-[#c1793f] text-white font-bold border-[#c1793f] shadow-[0_2px_12px_rgba(193,121,63,0.35)]"
+                        : "bg-[#161c28] text-zinc-300 border-white/10 hover:border-[#cab695]/30 hover:bg-[#1f2738]"
                     }`}
                   >
                     <span>{preset.badge}</span>
@@ -420,35 +429,35 @@ export default function Home() {
           </div>
         ) : (
           /* Judge / Meta AI Mode Telemetry Header */
-          <div className="rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-purple-500/25 shadow-2xl bg-gradient-to-r from-purple-950/20 via-[#0a0c12] to-emerald-950/20">
+          <div className="rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-[#526569]/40 shadow-xl bg-gradient-to-r from-[#121820] via-[#10141d] to-[#1a1418]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-2">
-                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-950/80 border border-purple-700/60 text-purple-300 text-[11px] font-mono">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                  <span>Meta Global AI Hackathon · Telemetry &amp; Reasoning Inspector</span>
+                <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#161c28] border border-[#526569]/50 text-[#cab695] text-[11px] font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#526569] animate-pulse" />
+                  <span>Meta Global AI Hackathon · Tri-Model Telemetry &amp; Reasoning</span>
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center space-x-2">
-                  <span>Meta AI Tri-Model Autonomous Commerce Pipeline</span>
+                  <span>Meta AI Autonomous Commerce Pipeline</span>
                 </h1>
                 <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-2xl">
-                  Decoupled architecture orchestrating <strong className="text-cyan-300 font-mono">SAM 3.1</strong> (Zero-shot Spatial Perception), <strong className="text-purple-300 font-mono">Muse Spark 1.3</strong> (Multimodal Emerging Market Reasoning), and <strong className="text-emerald-300 font-mono">Muse Code</strong> (Agentic Next.js 14 App Router Synthesis).
+                  Decoupled multi-agent architecture orchestrating <strong className="text-[#96a8b4] font-mono">SAM 3.1</strong> (Zero-shot Spatial Perception), <strong className="text-[#cab695] font-mono">Muse Spark 1.3</strong> (Multimodal Emerging Market Grounding), and <strong className="text-[#25D366] font-mono">Muse Code</strong> (Agentic Next.js 14 Web Synthesis).
                 </p>
               </div>
 
               {/* Technical Model Chips */}
               <div className="grid grid-cols-3 gap-2.5 min-w-[280px]">
-                <div className="bg-[#10141f] border border-cyan-500/20 rounded-xl p-2.5 text-center shadow-sm">
-                  <span className="text-[9px] uppercase font-mono text-cyan-400 block font-bold">1. Perception</span>
+                <div className="bg-[#161c28] border border-[#526569]/30 rounded-xl p-2.5 text-center shadow-sm">
+                  <span className="text-[9px] uppercase font-mono text-[#96a8b4] block font-bold">1. Perception</span>
                   <span className="text-xs font-bold text-white font-mono">SAM 3.1</span>
                   <span className="block text-[9px] text-zinc-400 font-mono">Spatial Masks</span>
                 </div>
-                <div className="bg-[#10141f] border border-purple-500/20 rounded-xl p-2.5 text-center shadow-sm">
-                  <span className="text-[9px] uppercase font-mono text-purple-400 block font-bold">2. Reasoning</span>
+                <div className="bg-[#161c28] border border-[#c1793f]/30 rounded-xl p-2.5 text-center shadow-sm">
+                  <span className="text-[9px] uppercase font-mono text-[#cab695] block font-bold">2. Reasoning</span>
                   <span className="text-xs font-bold text-white font-mono">Muse Spark</span>
                   <span className="block text-[9px] text-zinc-400 font-mono">NGN Pricing</span>
                 </div>
-                <div className="bg-[#10141f] border border-emerald-500/20 rounded-xl p-2.5 text-center shadow-sm">
-                  <span className="text-[9px] uppercase font-mono text-emerald-400 block font-bold">3. Synthesis</span>
+                <div className="bg-[#161c28] border border-[#25D366]/30 rounded-xl p-2.5 text-center shadow-sm">
+                  <span className="text-[9px] uppercase font-mono text-[#25D366] block font-bold">3. Synthesis</span>
                   <span className="text-xs font-bold text-white font-mono">Muse Code</span>
                   <span className="block text-[9px] text-zinc-400 font-mono">PWA Web App</span>
                 </div>
@@ -457,7 +466,7 @@ export default function Home() {
 
             {/* Preset Selector in Judge Mode */}
             <div className="mt-4 pt-3.5 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
-              <span className="text-[11px] font-mono text-zinc-400">
+              <span className="text-[11px] font-mono text-[#cab695]">
                 Evaluation Test Stalls:
               </span>
               <div className="flex flex-wrap items-center gap-2">
@@ -467,8 +476,8 @@ export default function Home() {
                     onClick={() => handleSelectPreset(preset)}
                     className={`text-xs px-3 py-1 rounded-lg border font-mono transition-all active:scale-[0.98] ${
                       activePreset.id === preset.id
-                        ? "bg-purple-600 text-white font-bold border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.35)]"
-                        : "bg-[#11141c] text-zinc-400 border-white/10 hover:border-white/20"
+                        ? "bg-[#6a3f49] text-white font-bold border-[#c1793f] shadow-[0_2px_10px_rgba(106,63,73,0.4)]"
+                        : "bg-[#161c28] text-zinc-400 border-white/10 hover:border-white/20"
                     }`}
                   >
                     {preset.name} ({preset.boxes.length} SKUs)
@@ -482,65 +491,65 @@ export default function Home() {
         {/* TAB 1: MAIN INTERACTIVE STUDIO */}
         {activeTab === "demo" && (
           <div className="space-y-4">
-            {/* 3 Step Process Bar */}
+            {/* Commerce Workflow Rail */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl bg-[#08090a] border border-white/[0.08] flex items-center space-x-3.5 shadow-sm backdrop-blur-md">
-                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xs shadow-inner">
+              <div className="p-3.5 rounded-xl bg-[#10141d] border border-white/[0.08] flex items-center space-x-3.5 shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-[#c1793f]/15 border border-[#c1793f]/30 flex items-center justify-center text-[#c1793f] font-bold text-xs">
                   1
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>{viewMode === "judge" ? "Physical Stall Photo" : "1. Snap Stall Photo"}</span>
+                    <span>{viewMode === "judge" ? "Visual Perception" : "1. Snap Stall Photo"}</span>
                     {viewMode === "judge" ? (
-                      <span className="text-[10px] font-mono text-cyan-400">(SAM 3.1)</span>
+                      <span className="text-[10px] font-mono text-[#96a8b4]">(SAM 3.1)</span>
                     ) : (
-                      <span className="text-[10px] font-mono text-emerald-400">Step 1</span>
+                      <span className="text-[10px] font-medium text-[#cab695]">Step 1</span>
                     )}
                   </h3>
                   <p className="text-[11px] text-zinc-400">
-                    {viewMode === "judge" ? "Isolates physical goods & stock contours" : "Take or upload a picture of your stall shelf"}
+                    {viewMode === "judge" ? "Spatial bounding masks & produce segmentation" : "Snap or upload a photo of your shelf"}
                   </p>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#08090a] border border-white/[0.08] flex items-center space-x-3.5 shadow-sm backdrop-blur-md">
-                <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-xs shadow-inner">
+              <div className="p-3.5 rounded-xl bg-[#10141d] border border-white/[0.08] flex items-center space-x-3.5 shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-[#cab695]/15 border border-[#cab695]/30 flex items-center justify-center text-[#cab695] font-bold text-xs">
                   2
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>{viewMode === "judge" ? "Cognitive Local Pricing" : "2. AI Catalogs Items"}</span>
+                    <span>{viewMode === "judge" ? "Local Market Reasoning" : "2. Auto-Catalog & Price"}</span>
                     {viewMode === "judge" ? (
-                      <span className="text-[10px] font-mono text-amber-400">(Muse Spark)</span>
+                      <span className="text-[10px] font-mono text-[#cab695]">(Muse Spark)</span>
                     ) : (
-                      <span className="text-[10px] font-mono text-amber-400">Step 2</span>
+                      <span className="text-[10px] font-medium text-[#cab695]">Step 2</span>
                     )}
                   </h3>
                   <p className="text-[11px] text-zinc-400">
                     {viewMode === "judge"
-                      ? `Calculates fair market rates in ${merchantContext.currency}`
-                      : `Automatic product catalog & pricing in ${merchantContext.currency}`}
+                      ? `Computes fair retail rates in ${merchantContext.currency}`
+                      : `Items detected with prices in ${merchantContext.currency}`}
                   </p>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#08090a] border border-white/[0.08] flex items-center space-x-3.5 shadow-sm backdrop-blur-md">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs shadow-inner">
+              <div className="p-3.5 rounded-xl bg-[#10141d] border border-white/[0.08] flex items-center space-x-3.5 shadow-sm">
+                <div className="w-8 h-8 rounded-xl bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center text-[#25D366] font-bold text-xs">
                   3
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white flex items-center space-x-1.5">
-                    <span>{viewMode === "judge" ? "1-Click WhatsApp Store" : "3. Launch WhatsApp Store"}</span>
+                    <span>{viewMode === "judge" ? "Autonomous Storefront" : "3. Launch WhatsApp Store"}</span>
                     {viewMode === "judge" ? (
-                      <span className="text-[10px] font-mono text-emerald-400">(Muse Code)</span>
+                      <span className="text-[10px] font-mono text-[#25D366]">(Muse Code)</span>
                     ) : (
-                      <span className="text-[10px] font-mono text-emerald-400">Step 3</span>
+                      <span className="text-[10px] font-medium text-[#25D366]">Step 3</span>
                     )}
                   </h3>
                   <p className="text-[11px] text-zinc-400">
                     {viewMode === "judge"
-                      ? "Instant web app + WhatsApp checkout"
-                      : "Share instant order link with WhatsApp customers"}
+                      ? "PWA generation with WhatsApp checkout"
+                      : "Share link with customers to order on WhatsApp"}
                   </p>
                 </div>
               </div>
@@ -586,13 +595,13 @@ export default function Home() {
         {/* TAB 2: STOREFRONT & PHONE SIMULATOR (Step 3) */}
         {activeTab === "storefront" && (
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-[#08090a] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl backdrop-blur-md">
+            <div className="p-4 rounded-2xl bg-[#10141d] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl backdrop-blur-md">
               <div>
                 <h2 className="text-sm font-bold text-white flex items-center space-x-2">
-                  <Smartphone className="w-4 h-4 text-emerald-400" />
+                  <Smartphone className="w-4 h-4 text-[#c1793f]" />
                   <span>Live Customer Experience (Smartphone Simulator)</span>
                 </h2>
-                <p className="text-xs text-zinc-400 mt-0.5">
+                <p className="text-xs text-[#cdd4dc] mt-0.5">
                   {viewMode === "judge"
                     ? 'This is the exact mobile storefront synthesized by Muse Code. Add products to the cart and tap "Order on WhatsApp" to test the order route.'
                     : 'This is your live mobile storefront. Add products to the cart and tap "Order on WhatsApp" to test customer ordering.'}
@@ -600,9 +609,9 @@ export default function Home() {
               </div>
               <button
                 onClick={() => setActiveTab("demo")}
-                className="px-3.5 py-1.5 bg-[#141722] hover:bg-[#1a202c] text-zinc-200 border border-white/10 rounded-xl text-xs font-semibold self-start sm:self-auto transition-colors active:scale-[0.98]"
+                className="px-3.5 py-1.5 bg-[#161c28] hover:bg-[#1f2738] text-zinc-200 border border-white/10 rounded-xl text-xs font-semibold self-start sm:self-auto transition-colors active:scale-[0.98]"
               >
-                ← Back to Visual Studio
+                ← Back to Stall Studio
               </button>
             </div>
 
@@ -617,9 +626,9 @@ export default function Home() {
         {/* TAB 3: UNDER THE HOOD / META AI ARCHITECTURE (For Judges & Engineers) */}
         {activeTab === "architecture" && (
           <div className="space-y-6">
-            <div className="p-5 sm:p-6 rounded-2xl bg-[#08090a] border border-white/[0.08] space-y-4 shadow-2xl backdrop-blur-md">
+            <div className="p-5 sm:p-6 rounded-2xl bg-[#10141d] border border-[#526569]/30 space-y-4 shadow-xl backdrop-blur-md">
               <h2 className="text-base font-bold text-white flex items-center space-x-2">
-                <Terminal className="w-4 h-4 text-emerald-400" />
+                <Terminal className="w-4 h-4 text-[#c1793f]" />
                 <span>Meta AI 3-Model Pipeline Architecture</span>
               </h2>
               <p className="text-xs text-zinc-300 leading-relaxed max-w-3xl">
@@ -627,8 +636,8 @@ export default function Home() {
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-[#0e1118] border border-cyan-500/20 space-y-2 shadow-sm">
-                  <span className="text-[10px] font-mono uppercase text-cyan-400 block font-bold">
+                <div className="p-4 rounded-xl bg-[#161c28] border border-[#526569]/40 space-y-2 shadow-sm">
+                  <span className="text-[10px] font-mono uppercase text-[#96a8b4] block font-bold">
                     1. SAM 3.1 (Eyes)
                   </span>
                   <h3 className="text-xs font-bold text-white">Visual Perception &amp; Segmentation</h3>
@@ -637,8 +646,8 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#0e1118] border border-amber-500/20 space-y-2 shadow-sm">
-                  <span className="text-[10px] font-mono uppercase text-amber-400 block font-bold">
+                <div className="p-4 rounded-xl bg-[#161c28] border border-[#c1793f]/40 space-y-2 shadow-sm">
+                  <span className="text-[10px] font-mono uppercase text-[#cab695] block font-bold">
                     2. Muse Spark 1.3 (Brain)
                   </span>
                   <h3 className="text-xs font-bold text-white">Cognitive Reasoning &amp; Pricing</h3>
@@ -647,8 +656,8 @@ export default function Home() {
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#0e1118] border border-emerald-500/20 space-y-2 shadow-sm">
-                  <span className="text-[10px] font-mono uppercase text-emerald-400 block font-bold">
+                <div className="p-4 rounded-xl bg-[#161c28] border border-[#25D366]/40 space-y-2 shadow-sm">
+                  <span className="text-[10px] font-mono uppercase text-[#25D366] block font-bold">
                     3. Muse Code (Hands)
                   </span>
                   <h3 className="text-xs font-bold text-white">Agentic Web Synthesis</h3>
@@ -661,7 +670,7 @@ export default function Home() {
 
             {/* Task Queue Widget for long-running batch jobs */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-zinc-400">
+              <h3 className="text-xs font-bold uppercase tracking-wider font-mono text-[#cab695]">
                 Async Background Inference Queue &amp; Webhooks
               </h3>
               <TaskQueueWidget />
@@ -675,19 +684,19 @@ export default function Home() {
         {!chatOpen ? (
           <button
             onClick={() => setChatOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-[#0f121a] hover:bg-[#161a24] text-white rounded-2xl shadow-2xl border border-white/20 active:translate-y-0.5 transition-all shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] group"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-[#161c28] hover:bg-[#1f2738] text-white rounded-2xl shadow-2xl border border-[#cab695]/30 active:translate-y-0.5 transition-all shadow-[0_10px_25px_-5px_rgba(0,0,0,0.6)] group"
           >
             <div className="relative">
-              <Bot className="w-4 h-4 text-emerald-400 transition-transform group-hover:scale-110" />
-              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute -top-1 -right-1 animate-pulse" />
+              <Bot className="w-4 h-4 text-[#c1793f] transition-transform group-hover:scale-110" />
+              <span className="w-2 h-2 rounded-full bg-[#25D366] absolute -top-1 -right-1 animate-pulse" />
             </div>
             <span className="text-xs font-bold">Ask AI Advisor</span>
           </button>
         ) : (
-          <div className="w-[390px] sm:w-[460px] h-[580px] bg-[#08090a] rounded-3xl border border-white/20 shadow-2xl flex flex-col overflow-hidden backdrop-blur-2xl ring-1 ring-white/10 animate-fadeIn">
-            <div className="p-3.5 bg-[#0e1118] border-b border-white/[0.08] flex items-center justify-between">
+          <div className="w-[390px] sm:w-[460px] h-[580px] bg-[#090b10] rounded-3xl border border-white/20 shadow-2xl flex flex-col overflow-hidden backdrop-blur-2xl ring-1 ring-white/10 animate-fadeIn">
+            <div className="p-3.5 bg-[#10141d] border-b border-white/[0.08] flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Bot className="w-4 h-4 text-emerald-400" />
+                <Bot className="w-4 h-4 text-[#c1793f]" />
                 <h3 className="text-xs font-bold text-white">OmniStore AI Assistant</h3>
               </div>
               <button
