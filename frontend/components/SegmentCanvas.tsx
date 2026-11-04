@@ -17,6 +17,7 @@ import {
   Scan,
   Image as ImageIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   BoundingBox,
   SegmentCrop,
@@ -48,6 +49,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
   inventoryThumbnails = {},
   viewMode = "merchant",
 }) => {
+  const router = useRouter();
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [segmentData, setSegmentData] = useState<SegmentResponse | null>(null);
   const [hoveredBoxId, setHoveredBoxId] = useState<string | null>(null);
@@ -99,6 +101,14 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
       }
 
       onPipelineComplete(result);
+
+      // Wagtail-style auto-deploy: redirect to live store page after scan
+      if (result.store_url) {
+        const storePath = result.store_url.startsWith("http")
+          ? new URL(result.store_url).pathname
+          : result.store_url;
+        setTimeout(() => router.push(storePath), 1500);
+      }
     } catch (err) {
       console.error("Storefront scan error:", err);
     } finally {

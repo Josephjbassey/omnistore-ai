@@ -4,6 +4,7 @@ Decoupled high-performance backend supporting real-time streaming,
 multimodal processing (SAM 3.1 & Muse Spark 1.3), and agentic workflows.
 """
 from __future__ import annotations
+
 import httpx
 import logging
 import os
@@ -16,6 +17,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from dotenv import load_dotenv
+
+from backend.omnistore.auth_db import init_auth_db
+from backend.omnistore.rate_limit import RateLimitMiddleware
+from backend.omnistore.store_db import init_db, upsert_inventory, upsert_store
 
 logger = logging.getLogger("omnistore.backend")
 
@@ -30,38 +35,31 @@ for p in [str(backend_dir), str(project_root)]:
 load_dotenv(backend_dir / ".env")
 load_dotenv(project_root / ".env")
 
+# Initialize databases on startup
+init_db()
+init_auth_db()
+
 from backend.models.schemas import HealthResponse
 from backend.services.meta_service import get_meta_service
 from backend.services.queue_service import get_queue_manager
+from backend.routers import auth as auth_router
 from backend.routers import vision, agent, jobs, memory
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup: Start background queue worker
-    queue_mgr = get_queue_manager()
-    print("\n" + "=" * 65)
-    print(" 🏪 OmniStore AI Engine — Build for Your World (v2.1)")
-    print(" 👁️  Eyes:    SAM 3.1 (Visual Perception & Spatial Segmentation)")
-    print(" 🧠 Brain:   Muse Spark 1.3 (Cognitive Reasoning & Pricing)")
-    print(" ✋ Hands:   Muse Code (Agentic Web Storefront Synthesis)")
-    print(" ⚡ Ready on http://localhost:8000 (CORS -> http://localhost:3000)")
-    print("=" * 65 + "\n")
-    yield
-    # Shutdown: Stop worker and close HTTP client sessions
-    await queue_mgr.stop()
-    meta_service = get_meta_service()
-    await meta_service.close()
-
+from backend.routers import store as store_router
 
 app = FastAPI(
     title="OmniStore AI Orchestrator",
     description="Physical-to-Digital Micro-Commerce Engine (Build for Your World) integrating SAM 3.1, Muse Spark 1.3, and Muse Code.",
     version="2.1.0",
-    lifespan=lifespan,
 )
 
-# ─── CORS Middleware ────────────────────────────────────────────────────────
+# Rate limiting middleware (applied before CORS)
+app.add_middleware(
+    RateLimitMiddleware,
+    max_requests=int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "120")),
+    window_seconds=60,
+)
+
+# CORS Middleware
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = [
     "http://localhost:3000",
@@ -85,7 +83,7 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization", "x-meta-api-key"],
 )
 
-# ─── Global Error Handler ───────────────────────────────────────────────────
+# Global Error Handler
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.exception(f"Unhandled error on {request.method} {request.url.path}: {exc}")
@@ -97,14 +95,37 @@ async def global_exception_handler(request: Request, exc: Exception):
         },
     )
 
-# ─── Register API Routers ───────────────────────────────────────────────────
+# Register API Routers
 app.include_router(vision.router)
 app.include_router(agent.router)
 app.include_router(jobs.router)
 app.include_router(memory.router)
+app.include_router(auth_router.router)
+app.include_router(store_router.router)
 
 
-# ─── Root & Health Endpoints ────────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Start background queue worker
+    queue_mgr = get_queue_manager()
+    print("\n" + "=" * 65)
+    print(" 🏪 OmniStore AI Engine — Build for Your World (v2.1)")
+    print(" 👁️  Eyes:    SAM 3.1 (Visual Perception & Spatial Segmentation)")
+    print(" 🧠 Brain:   Muse Spark 1.3 (Cognitive Reasoning & Pricing)")
+    print(" ✋ Hands:   Muse Code (Agentic Web Storefront Synthesis)")
+    print(" ⚡ Ready on http://localhost:8000 (CORS -> http://localhost:3000)")
+    print("=" * 65 + "\n")
+    yield
+    # Shutdown: Stop worker and close HTTP client sessions
+    await queue_mgr.stop()
+    meta_service = get_meta_service()
+    await meta_service.close()
+
+
+app.router.lifespan_context = lifespan
+
+
+# Root & Health Endpoints
 @app.get("/", tags=["General"])
 async def root():
     return {
@@ -125,6 +146,12 @@ async def root():
             "storefront_code_gen": "POST /api/v1/code/generate",
             "streaming_assistant": "POST /api/v1/agent/chat",
             "background_jobs": "POST /api/v1/jobs",
+            "auth_register": "POST /api/v1/auth/register",
+            "auth_login": "POST /api/v1/auth/login",
+            "auth_me": "GET /api/v1/auth/me",
+            "store_list": "GET /api/v1/store",
+            "store_get": "GET /api/v1/store/{slug}",
+            "store_publish": "POST /api/v1/store/{slug}/publish",
         },
     }
 
@@ -144,7 +171,6 @@ async def health_check():
     overall = "healthy"
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(connect=2.0, read=3.0)) as client:
-            # Probe Ollama /api/tags (used for SAM 3.1, Muse Spark 1.3, Muse Code local fallback)
             try:
                 r = await client.get("http://localhost:11434/api/tags")
                 if r.status_code == 200:
@@ -172,6 +198,7 @@ def start(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
 
 def start_cli(voice: bool = False):
     from backend.core.agent_core import Agent, load_skills
+
     agent = Agent("fast", load_skills())
     print("\n[OmniStore AI CLI] Type your prompt, or Ctrl+C to exit.\n")
     while True:
@@ -180,6 +207,7 @@ def start_cli(voice: bool = False):
             if not user_input.strip():
                 continue
             import asyncio
+
             reply = asyncio.run(agent.run_turn(user_input))
             print(f"OmniStore> {reply}\n")
         except (KeyboardInterrupt, EOFError):
@@ -189,6 +217,7 @@ def start_cli(voice: bool = False):
 
 def main():
     import argparse
+
     parser = argparse.ArgumentParser(description="OmniStore AI Engine")
     parser.add_argument("--api", action="store_true", help="Start FastAPI HTTP Engine (default)")
     parser.add_argument("--cli", action="store_true", help="Terminal chat mode")
@@ -202,6 +231,7 @@ def main():
     elif args.tui:
         try:
             from backend.tui.hermes_tui import start_hermes_tui
+
             start_hermes_tui(voice_playback=args.voice)
         except Exception as e:
             print(f"Could not start TUI: {e}")

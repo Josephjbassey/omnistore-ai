@@ -22,6 +22,9 @@ from typing import List, Dict, Any, Optional, AsyncGenerator
 import httpx
 from fastapi import Header
 
+from omnistore.store_db import upsert_inventory, upsert_store
+from backend.omnistore.auth_db import add_store_owner
+
 from backend.models.schemas import (
     BoundingBox, SegmentCrop, SegmentResponse,
     MerchantContext, InventoryItem, StorefrontSchema,
@@ -1034,6 +1037,7 @@ export default function Storefront() {
         self,
         image_base64: str,
         context: MerchantContext,
+        user_id: Optional[str] = None,
     ) -> PipelineResponse:
         """
         Complete end-to-end pipeline:
@@ -1069,10 +1073,45 @@ export default function Storefront() {
 
         total_time = round((time.time() - start_time) * 1000, 2)
 
+        # Persist store to database (public, no signup required)
+        store_slug = store_schema.store_title.lower().replace(" ", "-").replace("'", "")
+        store_slug = re.sub(r"-+", "-", store_slug)
+        try:
+            upsert_store(
+                slug=store_slug,
+                store_title=store_schema.store_title,
+                currency=store_schema.currency,
+                location=store_schema.location,
+                whatsapp_number=store_schema.whatsapp_number,
+                category=store_schema.category,
+            )
+            # Auto-assign ownership to authenticated user (Wagtail-style page creation)
+            if user_id:
+                add_store_owner(user_id, store_slug, role="owner")
+            inventory_items = [
+                {
+                    "item_id": item.item_id,
+                    "name": item.name,
+                    "category": item.category,
+                    "suggested_price": item.suggested_price,
+                    "estimated_quantity": item.estimated_quantity,
+                    "description": item.description,
+                    "image_segment_id": item.image_segment_id,
+                    "image_url": item.image_url,
+                }
+                for item in store_schema.inventory
+            ]
+            if inventory_items:
+                upsert_inventory(store_slug, inventory_items)
+        except Exception as e:
+            logger.error(f"Persistence failed: {e}")
+
         return PipelineResponse(
             status="completed",
             store_schema=store_schema,
             deploy_url=code_res.preview_url,
+            store_url=f"/store/{store_slug}",
+            store_slug=store_slug,
             generated_files_count=code_res.files_generated,
             segments_found=len(seg_res.bounding_boxes),
             processing_time_ms=total_time,

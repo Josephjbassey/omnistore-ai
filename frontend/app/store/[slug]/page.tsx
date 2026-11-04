@@ -63,13 +63,24 @@ export default function StorefrontPage() {
     fetch(`/api/v1/store/${slug}`)
       .then((r) => r.json())
       .then((data) => {
-        if (
-          data.success &&
-          data.schema &&
-          Array.isArray(data.schema.inventory) &&
-          data.schema.inventory.length > 0
-        ) {
-          setSchema(data.schema);
+        if (data && data.inventory && Array.isArray(data.inventory) && data.inventory.length > 0) {
+          setSchema({
+            store_title: data.store_title || slug,
+            currency: data.currency || "NGN",
+            location: data.location || "",
+            whatsapp_number: data.whatsapp_number,
+            category: data.category || "General Merchandise",
+            inventory: data.inventory.map((item: any) => ({
+              item_id: item.item_id,
+              name: item.name,
+              category: item.category,
+              suggested_price: item.suggested_price,
+              estimated_quantity: item.estimated_quantity,
+              description: item.description,
+              image_segment_id: item.image_segment_id,
+              image_url: item.image_url,
+            })),
+          });
         }
       })
       .catch(() => {});

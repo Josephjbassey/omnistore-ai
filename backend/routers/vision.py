@@ -18,8 +18,23 @@ from backend.models.schemas import (
     PipelineResponse, StorefrontSchema
 )
 from backend.services.meta_service import MetaModelService, get_meta_service
+from backend.omnistore.auth_db import decode_access_token, get_user_by_id
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 router = APIRouter(prefix="/api/v1", tags=["OmniStore Pipeline"])
+
+security = HTTPBearer(auto_error=False)
+
+async def get_current_user_optional(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
+    """Optional auth - returns user dict or None"""
+    if not credentials:
+        return None
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        return None
+    return get_user_by_id(payload["sub"])
 
 
 @router.post(
@@ -84,6 +99,7 @@ async def process_store_scan_endpoint(
     whatsapp_number: Optional[str] = Form("+2348012345678"),
     file: UploadFile = File(...),
     meta_service: MetaModelService = Depends(get_meta_service),
+    current_user: Optional[dict] = Depends(get_current_user_optional),
 ) -> PipelineResponse:
     try:
         contents = await file.read()
@@ -98,6 +114,7 @@ async def process_store_scan_endpoint(
         return await meta_service.process_store_scan(
             image_base64=data_url,
             context=context,
+            user_id=current_user["id"] if current_user else None,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Store scan pipeline failed: {str(exc)}")
@@ -111,6 +128,7 @@ async def process_store_scan_endpoint(
 async def process_store_scan_json_endpoint(
     payload: Dict[str, Any],
     meta_service: MetaModelService = Depends(get_meta_service),
+    current_user: Optional[dict] = Depends(get_current_user_optional),
 ) -> PipelineResponse:
     try:
         image_b64 = payload.get("image_base64", "")
@@ -119,11 +137,12 @@ async def process_store_scan_json_endpoint(
             store_name=context_data.get("store_name", payload.get("store_name", "Mama Cass Market")),
             currency=context_data.get("currency", payload.get("currency", "NGN")),
             location=context_data.get("location", payload.get("location", "Akure Central Market, Nigeria")),
-            whatsapp_number=context_data.get("whatsapp_number", payload.get("whatsapp_number", "+2348012345678")),
+            whatsapp_number=context_data.get("whatsapp_number", payload.get("whatsapp_number", "+234****5678")),
         )
         return await meta_service.process_store_scan(
             image_base64=image_b64,
             context=context,
+            user_id=current_user["id"] if current_user else None,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Store scan error: {str(exc)}")

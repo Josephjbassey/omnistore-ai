@@ -20,7 +20,10 @@ import {
   getHealth,
   getSquadRoles,
   generateStorefrontCode,
+  scanStoreJson,
 } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 import {
   Bot,
   Sparkles,
@@ -44,6 +47,8 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const { user, isAuthenticated, isLoading, logout, login, register } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<ActiveTab>("demo");
   const [viewMode, setViewMode] = useState<ViewMode>("merchant");
   const [activePreset, setActivePreset] = useState<StallPreset>(STALL_PRESETS[0]);
@@ -273,7 +278,54 @@ export default function Home() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* HERO SECTION: Tailored based on View Mode */}
+        {/* Auth Bar */ }
+        {isLoading ? null : (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0e121a]/60 border border-white/10 rounded-2xl p-4 sm:p-5 mb-4 shadow-inner">
+            {isAuthenticated && user ? (
+              <>
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 bg-[#121622] border border-white/10 rounded-xl p-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span className="text-xs font-medium text-slate-200">{user.full_name}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">{user.role}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => router.push("/")}
+                    className="px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all"
+                  >
+                    Publish Store
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="px-3 py-1.5 rounded-xl text-xs font-medium bg-[#161c28] hover:bg-[#202838] text-slate-300 border border-white/10 transition-all"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center space-x-3 text-xs font-medium text-slate-400">
+                <span>Not signed in</span>
+                <button
+                  onClick={() => router.push("/auth/login")}
+                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-sm transition-all"
+                >
+                  Sign in
+                </button>
+                <button
+                  onClick={() => router.push("/auth/register")}
+                  className="px-3 py-1.5 rounded-xl text-xs font-medium bg-transparent hover:bg-white/5 text-emerald-400 border border-emerald-500/30 transition-all"
+                >
+                  Create account
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* HERO SECTION: Tailored based on View Mode */ }
         {viewMode === "merchant" ? (
           /* Merchant / Store Owner Experience Header */
           <div className="glass-panel-elevated rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-white/[0.08] shadow-2xl">

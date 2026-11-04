@@ -89,12 +89,52 @@ export const setStoredMetaApiKey = (key: string): void => {
   }
 };
 
-export const getApiHeaders = (extra: Record<string, string> = {}): Record<string, string> => {
+// ─── Auth Token Helpers ─────────────────────────────────────────────────────
+export const getAuthToken = (): string => {
+  if (typeof window !== "undefined") {
+    return localStorage.getItem("omnistore_auth_token") || "";
+  }
+  return "";
+};
+
+export const setAuthToken = (token: string): void => {
+  if (typeof window !== "undefined") {
+    if (token && token.trim()) {
+      localStorage.setItem("omnistore_auth_token", token.trim());
+    } else {
+      localStorage.removeItem("omnistore_auth_token");
+    }
+  }
+};
+
+export const removeAuthToken = (): void => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("omnistore_auth_token");
+  }
+};
+
+export const getAuthHeaders = (extra: Record<string, string> = {}): Record<string, string> => {
   const headers: Record<string, string> = { ...extra };
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
   const key = getStoredMetaApiKey();
   if (key) {
     headers["x-meta-api-key"] = key;
-    headers["Authorization"] = `Bearer ${key}`;
+  }
+  return headers;
+};
+
+export const getApiHeaders = (extra: Record<string, string> = {}): Record<string, string> => {
+  const headers: Record<string, string> = { ...extra };
+  const token = getAuthToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  const key = getStoredMetaApiKey();
+  if (key) {
+    headers["x-meta-api-key"] = key;
   }
   return headers;
 };
@@ -216,6 +256,8 @@ export interface PipelineResponse {
   status: string;
   store_schema: StorefrontSchema;
   deploy_url?: string;
+  store_url?: string;
+  store_slug?: string;
   generated_files_count: number;
   segments_found: number;
   processing_time_ms: number;
@@ -593,9 +635,71 @@ export async function getBackgroundJob(jobId: string): Promise<BackgroundJob> {
 
 export async function listBackgroundJobs(limit: number = 20): Promise<BackgroundJob[]> {
   const res = await fetch(`${API_BASE_URL}/jobs?limit=${limit}`, {
-    headers: getApiHeaders(),
+    headers: getAuthHeaders(),
   });
   if (!res.ok) throw new Error(`Failed to list jobs: ${res.statusText}`);
+  return res.json();
+}
+
+// ─── Auth API Methods ───────────────────────────────────────────────────────
+
+export interface AuthTokens {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+    role: string;
+    is_active: boolean;
+  };
+}
+
+export async function login(
+  email: string,
+  password: string
+): Promise<AuthTokens> {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Login failed: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export async function register(
+  email: string,
+  password: string,
+  full_name: string,
+  role: string = "merchant"
+): Promise<AuthTokens> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, full_name, role }),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Registration failed: ${res.statusText}`);
+  }
+  return res.json();
+}
+
+export async function getMe(token: string): Promise<{
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+}> {
+  const res = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`Failed to fetch user: ${res.statusText}`);
   return res.json();
 }
 

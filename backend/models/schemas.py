@@ -166,6 +166,8 @@ class PipelineResponse(BaseModel):
     status: str = "completed"
     store_schema: StorefrontSchema
     deploy_url: Optional[str] = None
+    store_url: Optional[str] = None
+    store_slug: Optional[str] = None
     generated_files_count: int = 4
     segments_found: int = 0
     processing_time_ms: float = 0.0
