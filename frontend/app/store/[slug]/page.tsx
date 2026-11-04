@@ -18,19 +18,18 @@ import {
   ShieldCheck,
   QrCode,
   X,
+  Download,
 } from "lucide-react";
 import { STALL_PRESETS, StallPreset } from "@/lib/presets";
 import { StorefrontSchema, InventoryItem } from "@/lib/api";
+import { OmniStoreLogo } from "@/components/OmniStoreLogo";
 
 export default function StorefrontPage() {
-  // Next.js 14 compatible: extract slug from pathname (useParams() is Next.js 15+)
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
   const rawSlug = segments.length > 1 ? segments[segments.length - 1] : "lagos-produce";
-  // Collapse multiple dashes and trim leading/trailing dashes for matching
   const slug = rawSlug.replace(/-+/g, "-").replace(/^-|-$/g, "");
 
-  // Find matching preset by id or normalized name
   const matchedPreset =
     STALL_PRESETS.find(
       (p) =>
@@ -131,9 +130,9 @@ export default function StorefrontPage() {
           ).toLocaleString()} ${currency})`
       );
     const msg = encodeURIComponent(
-      `Hello ${schema.store_title}! I would like to place an order from your online store:\\n\\n${lines.join(
-        "\\n"
-      )}\\n\\n*Total Due:* ${totalPrice.toLocaleString()} ${currency}\\n\\nDelivery Location: Please confirm delivery or pickup.`
+      `Hello ${schema.store_title}! I would like to place an order from your online store:\n\n${lines.join(
+        "\n"
+      )}\n\n*Total Due:* ${totalPrice.toLocaleString()} ${currency}\n\nDelivery Location: Please confirm delivery or pickup.`
     );
     const phone =
       schema.whatsapp_number?.replace(/[^0-9]/g, "") || "2348012345678";
@@ -149,22 +148,24 @@ export default function StorefrontPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080a0f] text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
-      {/* Top Bar for OmniStore AI Context */}
-      <header className="sticky top-0 z-50 bg-[#0c0f16]/95 backdrop-blur-md border-b border-white/[0.08] px-4 py-2.5">
+    <div className="min-h-screen bg-[#08090a] text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+      {/* Top Bar with OmniStore Branding */}
+      <header className="sticky top-0 z-50 bg-[#08090a]/90 backdrop-blur-xl border-b border-white/[0.08] px-4 py-2.5">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+            className="flex items-center space-x-2 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-emerald-400" />
-            <span>Back to OmniStore AI Studio</span>
+            <span className="hidden sm:inline">Back to Studio</span>
           </Link>
+
+          <OmniStoreLogo size={24} showText={false} />
 
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowQrModal(true)}
-              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-mono bg-[#141924] hover:bg-[#1a2232] text-slate-300 border border-white/10 transition-colors"
+              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-mono bg-[#121622] hover:bg-[#1a202c] text-zinc-300 border border-white/10 transition-colors active:scale-[0.98]"
             >
               <QrCode className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden sm:inline">Stall QR</span>
@@ -172,42 +173,32 @@ export default function StorefrontPage() {
 
             <button
               onClick={copyShareLink}
-              className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-mono bg-[#141924] hover:bg-[#1a2232] text-slate-300 border border-white/10 transition-colors"
+              className="flex items-center space-x-1.5 px-3 py-1 rounded-xl text-xs font-mono bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold transition-all active:scale-[0.98] shadow-[0_0_12px_rgba(16,185,129,0.25)]"
             >
               {copiedLink ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied</span>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Copied!</span>
                 </>
               ) : (
                 <>
                   <Share2 className="w-3 h-3" />
-                  <span>Share</span>
+                  <span>Share Store</span>
                 </>
               )}
             </button>
-
-            <a
-              href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FJosephjbassey%2Fomnistore-ai&project-name=omnistore-storefront&repository-name=omnistore-storefront"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-bold bg-white hover:bg-slate-200 text-black shadow-sm transition-all"
-            >
-              <span>Instant Deploy</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
           </div>
         </div>
       </header>
 
       {/* Hero Storefront Banner with Real Stall Photo */}
-      <div className="relative w-full h-48 sm:h-64 bg-slate-900 overflow-hidden border-b border-white/[0.08]">
+      <div className="relative w-full h-48 sm:h-64 bg-zinc-950 overflow-hidden border-b border-white/[0.08]">
         <img
           src={matchedPreset.image_url}
           alt={schema.store_title}
           className="w-full h-full object-cover object-center brightness-[0.7]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080a0f] via-[#080a0f]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#08090a] via-[#08090a]/40 to-transparent" />
 
         <div className="absolute bottom-4 left-4 right-4 max-w-4xl mx-auto flex items-end justify-between">
           <div className="space-y-1">
@@ -218,10 +209,10 @@ export default function StorefrontPage() {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white drop-shadow-md">
               {schema.store_title}
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 flex items-center space-x-1.5">
+            <p className="text-xs sm:text-sm text-zinc-300 flex items-center space-x-1.5">
               <MapPin className="w-3.5 h-3.5 text-cyan-400" />
               <span>{schema.location}</span>
-              <span className="text-slate-500">·</span>
+              <span className="text-zinc-500">·</span>
               <span className="text-emerald-400 font-medium">WhatsApp Orders Active</span>
             </p>
           </div>
@@ -236,10 +227,10 @@ export default function StorefrontPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all active:scale-[0.98] ${
                 selectedCategory === cat
-                  ? "bg-emerald-500 text-slate-950 font-bold shadow-glow-emerald"
-                  : "bg-[#121622] text-slate-300 hover:text-white border border-white/10 hover:border-white/20"
+                  ? "bg-emerald-500 text-slate-950 font-bold shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+                  : "bg-[#11141c] text-zinc-300 hover:text-white border border-white/10 hover:border-white/20"
               }`}
             >
               {cat}
@@ -254,11 +245,10 @@ export default function StorefrontPage() {
             return (
               <div
                 key={item.item_id}
-                className="bg-[#0e121a] border border-white/[0.08] hover:border-white/20 rounded-2xl p-3.5 flex flex-col justify-between transition-all group shadow-sm hover:shadow-xl hover:bg-[#121722]"
+                className="bg-[#0e1118] border border-white/[0.08] hover:border-white/20 rounded-2xl p-3.5 flex flex-col justify-between transition-all group shadow-sm hover:shadow-xl hover:bg-[#121622]"
               >
                 <div>
-                  {/* Real Product Photo */}
-                  <div className="relative w-full h-44 rounded-xl overflow-hidden bg-slate-900 border border-white/5 mb-3">
+                  <div className="relative w-full h-44 rounded-xl overflow-hidden bg-zinc-950 border border-white/5 mb-3">
                     <img
                       src={
                         item.image_url ||
@@ -267,7 +257,7 @@ export default function StorefrontPage() {
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-[#080a0f]/80 backdrop-blur-md border border-white/10 text-[10px] font-mono text-slate-300">
+                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-[#08090a]/80 backdrop-blur-md border border-white/10 text-[10px] font-mono text-zinc-300">
                       {item.category}
                     </span>
                     <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-md bg-emerald-950/80 backdrop-blur-md border border-emerald-800 text-[10px] font-mono text-emerald-300">
@@ -278,14 +268,14 @@ export default function StorefrontPage() {
                   <h3 className="font-semibold text-sm text-white group-hover:text-emerald-300 transition-colors">
                     {item.name}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
                     {item.description}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/[0.06]">
                   <div>
-                    <span className="text-[10px] font-mono text-slate-500 uppercase block">
+                    <span className="text-[10px] font-mono text-zinc-500 uppercase block">
                       Price
                     </span>
                     <span className="text-sm font-bold font-mono text-amber-400 tabular-nums">
@@ -296,16 +286,16 @@ export default function StorefrontPage() {
                   {countInCart === 0 ? (
                     <button
                       onClick={() => addToCart(item.item_id)}
-                      className="flex items-center space-x-1 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                      className="flex items-center space-x-1 px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add</span>
                     </button>
                   ) : (
-                    <div className="flex items-center space-x-2 bg-[#161c28] border border-white/10 rounded-xl p-1">
+                    <div className="flex items-center space-x-2 bg-[#141722] border border-white/10 rounded-xl p-1">
                       <button
                         onClick={() => removeFromCart(item.item_id)}
-                        className="w-6 h-6 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300"
+                        className="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-300 active:scale-95"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -314,7 +304,7 @@ export default function StorefrontPage() {
                       </span>
                       <button
                         onClick={() => addToCart(item.item_id)}
-                        className="w-6 h-6 rounded-lg bg-emerald-500 hover:bg-emerald-400 flex items-center justify-center text-slate-950"
+                        className="w-6 h-6 rounded-lg bg-emerald-500 hover:bg-emerald-400 flex items-center justify-center text-slate-950 active:scale-95"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -330,9 +320,9 @@ export default function StorefrontPage() {
       {/* Sticky Bottom WhatsApp Checkout Drawer */}
       {totalItems > 0 && (
         <div className="fixed bottom-4 left-4 right-4 z-40 max-w-xl mx-auto">
-          <div className="bg-[#121622]/95 backdrop-blur-xl border border-white/15 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex items-center justify-between">
+          <div className="bg-[#0e1118]/95 backdrop-blur-xl border border-white/15 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex items-center justify-between">
             <div>
-              <div className="flex items-center space-x-1.5 text-xs text-slate-400">
+              <div className="flex items-center space-x-1.5 text-xs text-zinc-400">
                 <ShoppingBag className="w-3.5 h-3.5 text-emerald-400" />
                 <span>{totalItems} items in order</span>
               </div>
@@ -343,7 +333,7 @@ export default function StorefrontPage() {
 
             <button
               onClick={handleWhatsAppOrder}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-black font-bold rounded-xl text-xs shadow-lg shadow-emerald-950 transition-all"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-[#25D366] hover:bg-[#20ba59] active:scale-[0.98] text-black font-bold rounded-xl text-xs shadow-lg shadow-emerald-950 transition-all"
             >
               <PhoneCall className="w-4 h-4" />
               <span>Order on WhatsApp</span>
@@ -355,10 +345,10 @@ export default function StorefrontPage() {
       {/* QR Code Modal for Physical Market Stall Placard */}
       {showQrModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0e121a] border border-white/10 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl relative">
+          <div className="bg-[#0e1118] border border-white/10 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl relative">
             <button
               onClick={() => setShowQrModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -367,7 +357,7 @@ export default function StorefrontPage() {
               <h3 className="font-bold text-base text-white">
                 Stall QR Poster
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-zinc-400">
                 Print or display this QR code at {schema.store_title} for walk-up shoppers to browse on mobile.
               </p>
             </div>
@@ -383,7 +373,7 @@ export default function StorefrontPage() {
             </div>
 
             <div className="text-center">
-              <span className="text-[11px] font-mono text-slate-400 break-all">
+              <span className="text-[11px] font-mono text-zinc-400 break-all">
                 {typeof window !== "undefined" ? window.location.href : ""}
               </span>
             </div>

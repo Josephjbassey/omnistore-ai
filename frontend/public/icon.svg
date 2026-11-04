@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="omni-grad-lg" x1="32" y1="32" x2="480" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <radialGradient id="glow-bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="rgba(16, 185, 129, 0.25)" />
+      <stop offset="100%" stop-color="rgba(8, 9, 10, 0)" />
+    </radialGradient>
+  </defs>
+  <!-- Background Obsidian Tile -->
+  <rect width="512" height="512" rx="120" fill="#08090a" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
+  <circle cx="256" cy="256" r="220" fill="url(#glow-bg)" />
+
+  <!-- Market Canopy Top Geometry -->
+  <path d="M96 184L256 96L416 184V216L256 136L96 216V184Z" fill="url(#omni-grad-lg)" />
+
+  <!-- Hexagonal Spatial Lens Framework -->
+  <path d="M256 176L384 256V352L256 432L128 352V256L256 176Z" stroke="url(#omni-grad-lg)" stroke-width="24" stroke-linejoin="round" />
+  
+  <!-- Optical Aperture Iris -->
+  <circle cx="256" cy="304" r="48" fill="#10b981" />
+  <circle cx="256" cy="304" r="24" fill="#ffffff" />
+  
+  <!-- Precision Reticle Crosshairs -->
+  <line x1="144" y1="304" x2="176" y2="304" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
+  <line x1="336" y1="304" x2="368" y2="304" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
+  <line x1="256" y1="224" x2="256" y2="244" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
+  <line x1="256" y1="364" x2="256" y2="384" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,21 @@
+{
+  "name": "OmniStore AI — Physical-to-Digital Micro-Commerce",
+  "short_name": "OmniStore",
+  "description": "Instant stall digitization with Meta SAM 3.1 and Muse AI.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#08090a",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "32x32",
+      "type": "image/svg+xml"
+    }
+  ]
+}

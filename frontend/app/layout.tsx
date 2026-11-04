@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
-import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "OmniStore AI — Physical-to-Digital Micro-Commerce Engine",
@@ -34,6 +33,7 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
     apple: "/icon.svg",
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -45,17 +45,13 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-screen bg-[#08090a] text-[#f7f8f8] antialiased selection:bg-[#10b981] selection:text-[#06110d] font-sans">
-        <AuthProvider>
-          <Header />
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
 }
-

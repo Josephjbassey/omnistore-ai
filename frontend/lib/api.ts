@@ -207,6 +207,7 @@ export interface InventoryItem {
 
 export interface StorefrontSchema {
   store_title: string;
+  store_name?: string;
   currency: string;
   location: string;
   whatsapp_number?: string;

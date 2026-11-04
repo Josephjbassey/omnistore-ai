@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="omni-grad" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Background Rounded Tile -->
+  <rect width="32" height="32" rx="7.5" fill="#08090a" stroke="rgba(255,255,255,0.12)" stroke-width="1" />
+  
+  <!-- Market Canopy / Stall Geometry -->
+  <path d="M6 11.5L16 6L26 11.5V13.5L16 8.5L6 13.5V11.5Z" fill="url(#omni-grad)" />
+  
+  <!-- Camera Aperture / Spatial Iris Core -->
+  <path d="M16 11L24 16V22L16 27L8 22V16L16 11Z" stroke="url(#omni-grad)" stroke-width="1.75" stroke-linejoin="round" />
+  <circle cx="16" cy="18.5" r="3" fill="#10b981" filter="url(#glow)" />
+  <circle cx="16" cy="18.5" r="1.5" fill="#ffffff" />
+  
+  <!-- Subtle Spatial Corner Tick Marks -->
+  <path d="M9 18H11M21 18H23M16 13.5V15.5M16 21.5V23.5" stroke="#34d399" stroke-width="1.2" stroke-linecap="round" />
+</svg>
