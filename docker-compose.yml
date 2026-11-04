@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: jenna-backend
+    container_name: omnistore-backend
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -17,7 +17,7 @@ services:
     volumes:
       - .:/app
     networks:
-      - jenna-net
+      - omnistore-net
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -28,7 +28,7 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    container_name: jenna-frontend
+    container_name: omnistore-frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -40,8 +40,8 @@ services:
       backend:
         condition: service_healthy
     networks:
-      - jenna-net
+      - omnistore-net
 
 networks:
-  jenna-net:
+  omnistore-net:
     driver: bridge

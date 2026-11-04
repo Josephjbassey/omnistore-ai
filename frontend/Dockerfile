@@ -1,4 +1,4 @@
-# Dockerfile for Jenna AI Assistant Next.js Frontend
+# Dockerfile for OmniStore AI Next.js Frontend
 FROM node:20-alpine
 
 WORKDIR /app

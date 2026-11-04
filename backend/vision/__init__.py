@@ -1,4 +1,4 @@
-"""Vision package for Jenna-Unified: camera, screen capture, motion detection."""
+"""Vision package for OmniStore AI: camera, screen capture, motion detection."""
 from .camera import CameraCapture
 from .screen import ScreenCapture
 from .activity import MotionDetector

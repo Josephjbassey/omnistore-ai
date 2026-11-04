@@ -1,5 +1,5 @@
 """
-Jenna Cross-Agent Memory Aggregator
+OmniStore Cross-Agent Memory Aggregator
 Read-only ingestion from all local AI agent harnesses into a unified SQLite+FTS5 store.
 """
 from __future__ import annotations
@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from typing import Iterator, Optional
 import logging
 
-log = logging.getLogger("jenna.memory.cross_agent")
+log = logging.getLogger("omnistore.memory.cross_agent")
 
 SECRET_PATTERNS = [
     (re.compile(r'(api[_-]?key|apikey|secret|token|password|passwd|auth[_-]?token|bearer)\s*[:=]\s*["\']?([a-zA-Z0-9_\-]{20,})', re.I), r'\1=[REDACTED]'),
@@ -78,7 +78,7 @@ class CrossAgentMemory:
     }
 
     def __init__(self, db_path: Optional[Path] = None):
-        self.db_path = db_path or (Path.home() / ".config" / "jenna" / "memory" / "agent_stream.db")
+        self.db_path = db_path or (Path.home() / ".config" / "omnistore" / "memory" / "agent_stream.db")
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 

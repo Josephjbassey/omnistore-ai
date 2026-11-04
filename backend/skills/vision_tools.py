@@ -1,6 +1,6 @@
-"""Privacy-Gated Vision Tools for Jenna-Unified.
+"""Privacy-Gated Vision Tools for OmniStore AI.
 
-Allows Jenna to see the user's screen and webcam ONLY when explicitly permitted.
+Allows OmniStore to see the user's screen and webcam ONLY when explicitly permitted.
 Provides permission verification, screen capture, webcam capture, and scene description.
 """
 import os
@@ -42,10 +42,10 @@ def grant_vision_permission_tool(target: str) -> str:
     target = target.lower().strip()
     if target in ("screen", "desktop", "display"):
         set_vision_permission("screen", True)
-        return "Screen vision permission GRANTED by Jabs. Jenna can now inspect the desktop screen."
+        return "Screen vision permission GRANTED by Jabs. OmniStore can now inspect the desktop screen."
     elif target in ("camera", "webcam", "user", "me"):
         set_vision_permission("camera", True)
-        return "Camera/Webcam vision permission GRANTED by Jabs. Jenna can now see through the webcam."
+        return "Camera/Webcam vision permission GRANTED by Jabs. OmniStore can now see through the webcam."
     elif target in ("both", "all"):
         set_vision_permission("screen", True)
         set_vision_permission("camera", True)

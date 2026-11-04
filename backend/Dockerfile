@@ -1,4 +1,4 @@
-# Dockerfile for Jenna AI Assistant FastAPI Backend
+# Dockerfile for OmniStore AI FastAPI Backend
 FROM python:3.11-slim
 
 WORKDIR /app

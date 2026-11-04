@@ -14,7 +14,7 @@ import httpx
 from backend.models.schemas import JobSubmitRequest, JobStatusResponse, JobType, JobStatus
 from backend.services.meta_service import get_meta_service
 
-logger = logging.getLogger("jenna.queue_service")
+logger = logging.getLogger("omnistore.queue_service")
 
 
 class TaskQueueManager:
@@ -189,7 +189,7 @@ class TaskQueueManager:
                 res = await client.post(
                     url,
                     json=job_status.model_dump(mode="json"),
-                    headers={"Content-Type": "application/json", "User-Agent": "Jenna-Webhook-Dispatcher/2.0"},
+                    headers={"Content-Type": "application/json", "User-Agent": "OmniStore-Webhook-Dispatcher/2.0"},
                 )
                 logger.info(f"Dispatched webhook for {job_status.job_id} to {url}: status {res.status_code}")
         except Exception as e:

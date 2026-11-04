@@ -1,8 +1,8 @@
 /**
- * Jenna Theme Switcher — Client-side theme management
+ * OmniStore Theme Switcher — Client-side theme management
  * Loads Omarchy themes, applies CSS variables, syncs with system theme
  */
-class JennaThemeSwitcher {
+class OmniStoreThemeSwitcher {
   constructor(options = {}) {
     this.apiBase = options.apiBase || "/api";
     this.onChange = options.onChange || (() => {});
@@ -55,7 +55,7 @@ class JennaThemeSwitcher {
 
   getStoredTheme() {
     try {
-      return localStorage.getItem("jenna-theme");
+      return localStorage.getItem("omnistore-theme");
     } catch {
       return null;
     }
@@ -63,7 +63,7 @@ class JennaThemeSwitcher {
 
   setStoredTheme(name) {
     try {
-      localStorage.setItem("jenna-theme", name);
+      localStorage.setItem("omnistore-theme", name);
     } catch {}
   }
 
@@ -100,29 +100,29 @@ class JennaThemeSwitcher {
     const isDark = theme.mode === "dark";
     // Minimal mapping - server should provide full mapping
     const vars = {
-      "--jenna-bg-base": isDark ? "#0A0B0D" : "#FAF4ED",
-      "--jenna-bg-surface": isDark ? "#101215" : "#F2E9E1",
-      "--jenna-bg-raised": isDark ? "#15181C" : "#E1DBD5",
-      "--jenna-hairline": isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)",
-      "--jenna-hairline-strong": isDark ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.14)",
-      "--jenna-ink-1": isDark ? "#F2F4F7" : "#575279",
-      "--jenna-ink-2": isDark ? "#9AA3AE" : "#9893A5",
-      "--jenna-ink-3": isDark ? "#5C6570" : "#CECACD",
-      "--jenna-accent": theme.accent,
-      "--jenna-state-listening": theme.cyan || "#22D3EE",
-      "--jenna-state-thinking": theme.yellow || "#F59E0B",
-      "--jenna-state-ready": theme.green || "#10B981",
-      "--jenna-state-fault": theme.red || "#DC143C",
-      "--jenna-mode": theme.mode,
+      "--omnistore-bg-base": isDark ? "#0A0B0D" : "#FAF4ED",
+      "--omnistore-bg-surface": isDark ? "#101215" : "#F2E9E1",
+      "--omnistore-bg-raised": isDark ? "#15181C" : "#E1DBD5",
+      "--omnistore-hairline": isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)",
+      "--omnistore-hairline-strong": isDark ? "rgba(255,255,255,0.13)" : "rgba(0,0,0,0.14)",
+      "--omnistore-ink-1": isDark ? "#F2F4F7" : "#575279",
+      "--omnistore-ink-2": isDark ? "#9AA3AE" : "#9893A5",
+      "--omnistore-ink-3": isDark ? "#5C6570" : "#CECACD",
+      "--omnistore-accent": theme.accent,
+      "--omnistore-state-listening": theme.cyan || "#22D3EE",
+      "--omnistore-state-thinking": theme.yellow || "#F59E0B",
+      "--omnistore-state-ready": theme.green || "#10B981",
+      "--omnistore-state-fault": theme.red || "#DC143C",
+      "--omnistore-mode": theme.mode,
     };
     return Object.entries(vars).map(([k, v]) => `${k}: ${v};`).join("\n");
   }
 
   injectCSS(cssText) {
-    let styleEl = document.getElementById("jenna-theme-vars");
+    let styleEl = document.getElementById("omnistore-theme-vars");
     if (!styleEl) {
       styleEl = document.createElement("style");
-      styleEl.id = "jenna-theme-vars";
+      styleEl.id = "omnistore-theme-vars";
       document.head.appendChild(styleEl);
     }
     styleEl.textContent = `:root { ${cssText} }`;
@@ -130,25 +130,25 @@ class JennaThemeSwitcher {
 
   buildPanel() {
     this.panel = document.createElement("div");
-    this.panel.className = "jenna-theme-switcher";
+    this.panel.className = "omnistore-theme-switcher";
     this.panel.innerHTML = this.panelHTML();
     document.body.appendChild(this.panel);
 
     // Find or create trigger button
-    this.triggerBtn = document.querySelector("[data-jenna-theme-trigger]");
+    this.triggerBtn = document.querySelector("[data-omnistore-theme-trigger]");
     if (!this.triggerBtn) {
       this.triggerBtn = document.createElement("button");
-      this.triggerBtn.setAttribute("data-jenna-theme-trigger", "");
-      this.triggerBtn.className = "jenna-theme-trigger";
+      this.triggerBtn.setAttribute("data-omnistore-theme-trigger", "");
+      this.triggerBtn.className = "omnistore-theme-trigger";
       this.triggerBtn.innerHTML = `
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="5"/>
           <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
         </svg>
-        <span class="jenna-theme-trigger__label">Theme</span>
+        <span class="omnistore-theme-trigger__label">Theme</span>
       `;
       // Insert into telemetry bar or header
-      const bar = document.querySelector(".jenna-telemetry-bar, header, nav");
+      const bar = document.querySelector(".omnistore-telemetry-bar, header, nav");
       if (bar) bar.appendChild(this.triggerBtn);
       else document.body.appendChild(this.triggerBtn);
     }
@@ -157,27 +157,27 @@ class JennaThemeSwitcher {
   panelHTML() {
     const current = this.themes.find(t => t.name === this.currentTheme) || this.themes[0];
     return `
-      <div class="jenna-theme-switcher__header">
-        <span class="jenna-theme-switcher__title">Theme</span>
-        <button class="jenna-theme-switcher__close" data-close>
+      <div class="omnistore-theme-switcher__header">
+        <span class="omnistore-theme-switcher__title">Theme</span>
+        <button class="omnistore-theme-switcher__close" data-close>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
-      <div class="jenna-theme-switcher__current">
-        <div class="jenna-theme-switcher__current-swatch" style="background:${current.accent}"></div>
-        <span class="jenna-theme-switcher__current-name">${current.name}</span>
-        <span class="jenna-theme-switcher__mode" style="text-transform:uppercase;font-size:9px;color:var(--jenna-ink-3)">${current.mode}</span>
+      <div class="omnistore-theme-switcher__current">
+        <div class="omnistore-theme-switcher__current-swatch" style="background:${current.accent}"></div>
+        <span class="omnistore-theme-switcher__current-name">${current.name}</span>
+        <span class="omnistore-theme-switcher__mode" style="text-transform:uppercase;font-size:9px;color:var(--omnistore-ink-3)">${current.mode}</span>
       </div>
-      <div class="jenna-theme-switcher__list" data-list>
+      <div class="omnistore-theme-switcher__list" data-list>
         ${this.themes.map(t => `
-          <button class="jenna-theme-option ${t.name === this.currentTheme ? 'active' : ''}" data-theme="${t.name}">
-            <div class="jenna-theme-option__swatch" style="background:${t.accent}"></div>
-            <div class="jenna-theme-option__info">
-              <div class="jenna-theme-option__name">${t.name}</div>
-              <div class="jenna-theme-option__meta">
-                <span class="jenna-theme-option__mode">${t.mode}</span>
+          <button class="omnistore-theme-option ${t.name === this.currentTheme ? 'active' : ''}" data-theme="${t.name}">
+            <div class="omnistore-theme-option__swatch" style="background:${t.accent}"></div>
+            <div class="omnistore-theme-option__info">
+              <div class="omnistore-theme-option__name">${t.name}</div>
+              <div class="omnistore-theme-option__meta">
+                <span class="omnistore-theme-option__mode">${t.mode}</span>
                 <span>●</span>
                 <span style="color:${t.accent}">accent</span>
               </div>
@@ -185,9 +185,9 @@ class JennaThemeSwitcher {
           </button>
         `).join("")}
       </div>
-      <div class="jenna-theme-switcher__sync">
-        <span class="jenna-theme-switcher__sync-label">Sync with Omarchy</span>
-        <button class="jenna-theme-switcher__sync-toggle ${this.syncWithSystem ? 'active' : ''}" data-sync-toggle></button>
+      <div class="omnistore-theme-switcher__sync">
+        <span class="omnistore-theme-switcher__sync-label">Sync with Omarchy</span>
+        <button class="omnistore-theme-switcher__sync-toggle ${this.syncWithSystem ? 'active' : ''}" data-sync-toggle></button>
       </div>
     `;
   }
@@ -233,11 +233,11 @@ class JennaThemeSwitcher {
     const current = this.themes.find(t => t.name === this.currentTheme);
     if (!current) return;
 
-    this.panel.querySelector(".jenna-theme-switcher__current-swatch").style.background = current.accent;
-    this.panel.querySelector(".jenna-theme-switcher__current-name").textContent = current.name;
-    this.panel.querySelector(".jenna-theme-switcher__mode").textContent = current.mode;
+    this.panel.querySelector(".omnistore-theme-switcher__current-swatch").style.background = current.accent;
+    this.panel.querySelector(".omnistore-theme-switcher__current-name").textContent = current.name;
+    this.panel.querySelector(".omnistore-theme-switcher__mode").textContent = current.mode;
 
-    this.panel.querySelectorAll(".jenna-theme-option").forEach(btn => {
+    this.panel.querySelectorAll(".omnistore-theme-option").forEach(btn => {
       btn.classList.toggle("active", btn.dataset.theme === this.currentTheme);
     });
   }
@@ -264,12 +264,12 @@ class JennaThemeSwitcher {
 }
 
 // Auto-init if not in a module context
-if (typeof window !== "undefined" && !window.JennaThemeSwitcher) {
-  window.JennaThemeSwitcher = JennaThemeSwitcher;
+if (typeof window !== "undefined" && !window.OmniStoreThemeSwitcher) {
+  window.OmniStoreThemeSwitcher = OmniStoreThemeSwitcher;
   document.addEventListener("DOMContentLoaded", () => {
-    window.jennaThemeSwitcher = new JennaThemeSwitcher();
-    window.jennaThemeSwitcher.init();
+    window.omnistoreThemeSwitcher = new OmniStoreThemeSwitcher();
+    window.omnistoreThemeSwitcher.init();
   });
 }
 
-export { JennaThemeSwitcher };
+export { OmniStoreThemeSwitcher };

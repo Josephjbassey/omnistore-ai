@@ -1,5 +1,5 @@
 """
-Jenna AI OS — Meta Model API Integration
+OmniStore AI — Meta Model API Integration
 
 Integrates Meta's Muse Spark, Muse Voice Transcribe, Muse Image, and SAM 3.1
 for the Meta Global AI Developer Hackathon (Oct 26 - Nov 4, 2026).

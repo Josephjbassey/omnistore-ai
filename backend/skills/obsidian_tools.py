@@ -1,6 +1,6 @@
-"""Obsidian Vault integration tools for Jenna-Unified.
+"""Obsidian Vault integration tools for OmniStore AI.
 
-Allows Jenna to search, read, write, and log daily entries directly into
+Allows OmniStore to search, read, write, and log daily entries directly into
 the user's Obsidian knowledge vault (~/wiki or configured OBSIDIAN_VAULT_PATH).
 """
 import os

@@ -1,6 +1,6 @@
-"""Git & DevOps Automation Skill for Jenna-Unified.
+"""Git & DevOps Automation Skill for OmniStore AI.
 
-Enables Jenna to:
+Enables OmniStore to:
 - Check git repository status, diffs, and unstaged changes
 - Inspect commit history and active branches
 - Generate structured semantic git commit messages

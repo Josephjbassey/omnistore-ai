@@ -1,7 +1,7 @@
-"""Hermes Self-Improvement & Kaizen Continuous Learning for Jenna-Unified.
+"""OmniStore AI Self-Improvement & Kaizen Continuous Learning.
 
 Inspired by NousResearch Hermes reflection loops and Kaizen continuous evolution.
-Allows Jenna to:
+Allows OmniStore to:
 - Reflect on tasks, user corrections, and execution outcomes
 - Persist structured learnings directly into the user's Obsidian vault (~/wiki/learnings.md)
 - Synthesize, test, and hot-reload new Python skills dynamically
@@ -29,7 +29,7 @@ def _ensure_paths():
 
 @tool
 def reflect_and_learn(task: str, outcome: str, lessons_learned: str, category: str = "general") -> str:
-    """Record a reflection, user correction, or newly acquired lesson into Jenna's persistent memory and Obsidian vault.
+    """Record a reflection, user correction, or newly acquired lesson into OmniStore's persistent memory and Obsidian vault.
     
     Use this whenever:
     - The user corrects your behavior or expresses a preference
@@ -55,7 +55,7 @@ def reflect_and_learn(task: str, outcome: str, lessons_learned: str, category: s
 
     try:
         if not LEARNINGS_FILE.exists():
-            LEARNINGS_FILE.write_text("# Jenna AI — Continuous Self-Improvement & Learnings Log\n\n", encoding="utf-8")
+            LEARNINGS_FILE.write_text("# OmniStore AI — Continuous Self-Improvement & Learnings Log\n\n", encoding="utf-8")
         with open(LEARNINGS_FILE, "a", encoding="utf-8") as f:
             f.write(entry_md)
     except Exception as e:
@@ -83,17 +83,17 @@ def reflect_and_learn(task: str, outcome: str, lessons_learned: str, category: s
     except Exception:
         pass
 
-    return f"Lesson recorded to Obsidian ({LEARNINGS_FILE.name}) and Hermes memory. Total learned insights: {len(records)}."
+    return f"Lesson recorded to Obsidian ({LEARNINGS_FILE.name}) and OmniStore memory. Total learned insights: {len(records)}."
 
 
 @tool
 def review_recent_learnings(query: str = "", limit: int = 5) -> str:
-    """Review Jenna's recent self-improvement insights, user preferences, and recorded lessons."""
+    """Review OmniStore's recent self-improvement insights, user preferences, and recorded lessons."""
     json_path = MEMORY_DIR / "hermes_learnings.json"
     if not json_path.exists():
         if LEARNINGS_FILE.exists():
             return LEARNINGS_FILE.read_text(encoding="utf-8")[-1200:]
-        return "No recorded learnings yet. Jenna will record insights as tasks are completed."
+        return "No recorded learnings yet. OmniStore will record insights as tasks are completed."
 
     try:
         records = json.loads(json_path.read_text(encoding="utf-8"))
@@ -113,7 +113,7 @@ def review_recent_learnings(query: str = "", limit: int = 5) -> str:
 
 @tool
 def synthesize_new_skill(skill_name: str, description: str, python_code: str) -> str:
-    """Dynamically synthesize a new Python skill tool and add it to Jenna's capabilities.
+    """Dynamically synthesize a new Python skill tool and add it to OmniStore's capabilities.
     
     The code must define a function decorated with @tool from langchain_core.tools.
     The code will be verified for syntax and safety before writing to ./skills/{skill_name}.py.
@@ -157,4 +157,4 @@ def synthesize_new_skill(skill_name: str, description: str, python_code: str) ->
     except Exception:
         pass
 
-    return f"Skill '{clean_name}' successfully synthesized and saved to skills/{clean_name}.py. It is now registered in Jenna's skill ecosystem."
+    return f"Skill '{clean_name}' successfully synthesized and saved to skills/{clean_name}.py. It is now registered in OmniStore's skill ecosystem."

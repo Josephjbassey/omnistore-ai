@@ -1,6 +1,6 @@
-"""Browser & Web Content Reader Skill for Jenna-Unified.
+"""Browser & Web Content Reader Skill for OmniStore AI.
 
-Enables Jenna to:
+Enables OmniStore to:
 - Read full articles and web pages from URLs
 - Convert HTML to clean markdown
 - Extract tables and structured documentation from websites
@@ -53,7 +53,7 @@ def fetch_webpage_content(url: str, max_chars: int = 4000) -> str:
         url = "https://" + url
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Jenna-Unified-Agent"
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 OmniStore-Agent"
     }
 
     try:

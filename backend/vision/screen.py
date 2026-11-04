@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import logging
 
-logger = logging.getLogger("jenna.vision.screen")
+logger = logging.getLogger("omnistore.vision.screen")
 
 
 class VisionError(Exception):

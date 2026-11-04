@@ -142,7 +142,7 @@ class Agent:
         available_model_names = list(MODELS.keys())
         self.system_prompt = SystemMessage(
             content=(
-                "You are Jenna, a local voice-first desktop assistant. "
+                "You are OmniStore, a local voice-first desktop assistant. "
                 "Use a tool rather than guessing whenever the answer depends on real data. "
                 "Keep answers concise — they may be read aloud by a text-to-speech engine. "
                 "Do not run destructive commands without user confirmation.\n\n"

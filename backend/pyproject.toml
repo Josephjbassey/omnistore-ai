@@ -3,10 +3,10 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jenna-backend"
+name = "omnistore-backend"
 version = "2.0.0"
-description = "FastAPI backend engine for Jenna AI Assistant with SAM 3.1 & Muse Spark"
-authors = [{ name = "Jenna Hackathon Team" }]
+description = "FastAPI backend engine for OmniStore AI with SAM 3.1 & Muse Spark"
+authors = [{ name = "OmniStore Hackathon Team" }]
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110.0",
@@ -18,4 +18,4 @@ dependencies = [
 ]
 
 [project.scripts]
-jenna-backend = "backend.main:start"
+omnistore-backend = "backend.main:start"

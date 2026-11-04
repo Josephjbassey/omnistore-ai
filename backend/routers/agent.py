@@ -1,5 +1,5 @@
 """
-Agent Chat Router for Jenna AI Assistant.
+Agent Chat Router for OmniStore AI.
 Provides endpoints for real-time streaming text generation via StreamingResponse,
 agent squad role routing, and tool calling metadata.
 """
@@ -17,35 +17,35 @@ router = APIRouter(prefix="/api/v1/agent", tags=["Agent & Chat"])
 SQUAD_ROLES_INFO = [
     {
         "role": "commander",
-        "name": "Jenna Commander",
+        "name": "OmniStore Commander",
         "model": "muse-spark-1.3",
         "description": "Executive coordinator, voice conversationalist, and task decomposer.",
         "capabilities": ["Orchestration", "Task Delegation", "Dialogue Flow"],
     },
     {
         "role": "planner",
-        "name": "Jenna Planner",
+        "name": "OmniStore Planner",
         "model": "muse-spark-1.3",
         "description": "Multi-step reasoning, structured task planning, agent orchestration.",
         "capabilities": ["Hierarchical Planning", "Dependency Mapping", "Verification"],
     },
     {
         "role": "coder",
-        "name": "Jenna Engineer",
+        "name": "OmniStore Engineer",
         "model": "muse-code",
         "description": "Code generation, debugging, refactoring, terminal tasks.",
         "capabilities": ["Full-Stack Dev", "Bug Fixing", "AST Validation"],
     },
     {
         "role": "researcher",
-        "name": "Jenna Scholar",
+        "name": "OmniStore Scholar",
         "model": "muse-spark-1.3",
         "description": "Web research, factual aggregation, documentation, vision analysis.",
         "capabilities": ["Deep Research", "Multimodal Grounding", "Synthesis"],
     },
     {
         "role": "desktop",
-        "name": "Jenna Operator",
+        "name": "OmniStore Operator",
         "model": "sam-3.1",
         "description": "Desktop automation, GUI inspection, click-and-type execution.",
         "capabilities": ["SAM 3.1 Segmentation", "Screen Inspection", "Window Tracking"],

@@ -1,4 +1,4 @@
-"""Hermes-Style Terminal User Interface (TUI) for Jenna-Unified.
+"""Hermes-Style Terminal User Interface (TUI) for OmniStore AI.
 
 Inspired by NousResearch Hermes & terminal agent workflows:
 - Live multi-agent squad roster with real-time status badges
@@ -154,7 +154,7 @@ def start_hermes_tui(voice_playback: bool = True):
     console.print(render_squad_table())
     console.print(
         Panel(
-            "[bold white]Welcome to Jenna Hermes TUI.[/bold white]\n"
+            "[bold white]Welcome to OmniStore TUI.[/bold white]\n"
             "Commands: [cyan]/model[/cyan] (switch brain) | [yellow]/voice[/yellow] (change voice) | "
             "[magenta]/screen[/magenta] (toggle screen sight) | [magenta]/cam[/magenta] (toggle webcam sight) | "
             "[green]/obsidian[/green] (vault notes) | [blue]/learn[/blue] (self-evolution log) | "

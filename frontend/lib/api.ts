@@ -1,5 +1,5 @@
 /**
- * Strongly-typed API client for OmniStore AI (by Jenna AI Platform).
+ * Strongly-typed API client for OmniStore AI.
  * Physical-to-Digital Micro-Commerce Engine (Build for Your World).
  * Integrates:
  *   - SAM 3.1: Visual perception, spatial segmentation & product extraction
@@ -12,7 +12,7 @@ export const getApiBaseUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
   }
   if (typeof window !== "undefined") {
-    return "/api/v1";
+    return "http://127.0.0.1:8000/api/v1";
   }
   return "http://127.0.0.1:8000/api/v1";
 };

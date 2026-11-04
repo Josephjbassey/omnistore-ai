@@ -1,5 +1,5 @@
 """
-Jenna AI Assistant — Unified Launcher.
+OmniStore AI — Unified Launcher.
 Delegates to backend/main.py.
 """
 import sys

@@ -1,5 +1,5 @@
 """
-Unified configuration for Jenna-Unified desktop voice agent & multi-agent squad.
+Unified configuration for OmniStore AI backend & multi-agent squad.
 
 Works seamlessly on Linux, Windows, and macOS.
 Dynamically discovers available local Ollama models and sets sensible defaults.
@@ -67,7 +67,7 @@ def discover_ollama_models() -> dict:
     try:
         import urllib.request
         import json
-        req = urllib.request.Request(f"{OLLAMA_HOST.rstrip('/')}/api/tags", headers={"User-Agent": "Jenna-Unified"})
+        req = urllib.request.Request(f"{OLLAMA_HOST.rstrip('/')}/api/tags", headers={"User-Agent": "OmniStore"})
         with urllib.request.urlopen(req, timeout=1.5) as resp:
             data = json.loads(resp.read().decode())
             installed = [m.get("name") for m in data.get("models", []) if m.get("name")]
@@ -130,7 +130,7 @@ def discover_all_models() -> dict:
 
     ollama_models = []
     try:
-        req = urllib.request.Request(f"{OLLAMA_HOST.rstrip('/')}/api/tags", headers={"User-Agent": "Jenna-Unified"})
+        req = urllib.request.Request(f"{OLLAMA_HOST.rstrip('/')}/api/tags", headers={"User-Agent": "OmniStore"})
         with urllib.request.urlopen(req, timeout=1.2) as resp:
             data = json.loads(resp.read().decode())
             for m in data.get("models", []):
@@ -160,7 +160,7 @@ def discover_all_models() -> dict:
 
     lmstudio_models = []
     try:
-        req = urllib.request.Request(f"{LMSTUDIO_HOST.rstrip('/')}/models", headers={"User-Agent": "Jenna-Unified"})
+        req = urllib.request.Request(f"{LMSTUDIO_HOST.rstrip('/')}/models", headers={"User-Agent": "OmniStore"})
         with urllib.request.urlopen(req, timeout=1.2) as resp:
             data = json.loads(resp.read().decode())
             for m in data.get("data", []):
@@ -200,8 +200,8 @@ def discover_all_models() -> dict:
 
 MODELS = discover_ollama_models()
 DEFAULT_MODEL_KEY = "fast"
-ACTIVE_CUSTOM_MODEL = os.getenv("JENNA_ACTIVE_MODEL", "")
-ACTIVE_CUSTOM_PROVIDER = os.getenv("JENNA_ACTIVE_PROVIDER", "ollama")
+ACTIVE_CUSTOM_MODEL = os.getenv("OMNISTORE_ACTIVE_MODEL", "")
+ACTIVE_CUSTOM_PROVIDER = os.getenv("OMNISTORE_ACTIVE_PROVIDER", "ollama")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "nomic-embed-text:latest")
 
 OLLAMA_OPTIONS = {
@@ -280,41 +280,41 @@ PROVIDER_MODELS = {
 # ─── Squad & Multi-Agent Roles ───────────────────────────────────────────
 SQUAD_ROLES = {
     "commander": {
-        "name": "Jenna Commander",
+        "name": "OmniStore Commander",
         "description": "Executive coordinator, voice conversationalist, and task decomposer.",
         "model_key": "fast",
         "meta_model": "muse-spark-1.3",
     },
     "planner": {
-        "name": "Jenna Planner",
+        "name": "OmniStore Planner",
         "description": "Multi-step reasoning, structured task planning, agent orchestration.",
         "model_key": "planner",
         "meta_model": "muse-spark-1.3",
     },
     "coder": {
-        "name": "Jenna Engineer",
+        "name": "OmniStore Engineer",
         "description": "Code generation, debugging, refactoring, terminal tasks.",
         "model_key": "coder",
         "meta_model": "muse-code",
     },
     "researcher": {
-        "name": "Jenna Scholar",
+        "name": "OmniStore Scholar",
         "description": "Web research, factual aggregation, documentation, vision analysis.",
         "model_key": "researcher",
         "meta_model": "muse-wonder-1.0",
     },
     "desktop": {
-        "name": "Jenna Operator",
+        "name": "OmniStore Operator",
         "description": "Computer use, desktop vision, keyboard/mouse actions.",
         "model_key": "fast",
     },
     "communicator": {
-        "name": "Jenna Communications",
+        "name": "OmniStore Communications",
         "description": "AgentPhone (Twilio SMS/calls) and AgentMail (Email).",
         "model_key": "fast",
     },
     "scheduler": {
-        "name": "Jenna Chronos",
+        "name": "OmniStore Chronos",
         "description": "Self-scheduling, reminders, recurring timers, autonomous loop.",
         "model_key": "fast",
     },
@@ -322,14 +322,14 @@ SQUAD_ROLES = {
 
 # ─── Audio / ASR ──────────────────────────────────────────────────────────
 SAMPLE_RATE = 16000
-WHISPER_MODEL = os.getenv("JENNA_WHISPER_MODEL", "tiny.en")
-WHISPER_COMPUTE = os.getenv("JENNA_WHISPER_COMPUTE", "int8")
+WHISPER_MODEL = os.getenv("OMNISTORE_WHISPER_MODEL", "tiny.en")
+WHISPER_COMPUTE = os.getenv("OMNISTORE_WHISPER_COMPUTE", "int8")
 WHISPER_BEAM_SIZE = 1
 RECORD_SECONDS = 5.0
 
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY", "")
 DEEPGRAM_MODEL = "nova-2"
-DEEPGRAM_FALLBACK = os.getenv("JENNA_DEEPGRAM_FALLBACK", "true").lower() == "true"
+DEEPGRAM_FALLBACK = os.getenv("OMNISTORE_DEEPGRAM_FALLBACK", "true").lower() == "true"
 
 # Deepgram Aura Voices
 DEEPGRAM_VOICES = [
@@ -350,8 +350,8 @@ DEEPGRAM_VOICES = [
     {"id": "af_bella", "name": "Bella (Local Kokoro)", "gender": "Female", "accent": "US", "style": "Offline Neural", "engine": "kokoro"},
 ]
 
-ACTIVE_TTS_VOICE = os.getenv("JENNA_TTS_VOICE", "aura-asteria-en")
-ACTIVE_TTS_ENGINE = os.getenv("JENNA_TTS_ENGINE", "deepgram" if DEEPGRAM_API_KEY else "piper")
+ACTIVE_TTS_VOICE = os.getenv("OMNISTORE_TTS_VOICE", "aura-asteria-en")
+ACTIVE_TTS_ENGINE = os.getenv("OMNISTORE_TTS_ENGINE", "deepgram" if DEEPGRAM_API_KEY else "piper")
 
 # ─── TTS ──────────────────────────────────────────────────────────────────
 TTS_ENGINE = ACTIVE_TTS_ENGINE
@@ -359,7 +359,7 @@ PIPER_VOICE_PATH = str(TTS_MODELS_DIR / "en_US-lessac-medium.onnx")
 PIPER_CONFIG_PATH = str(TTS_MODELS_DIR / "en_US-lessac-medium.onnx.json")
 KOKORO_MODEL_PATH = str(TTS_MODELS_DIR / "kokoro-v1.0.int8.onnx")
 KOKORO_VOICES_PATH = str(TTS_MODELS_DIR / "voices-v1.0.bin")
-TTS_SPEED = float(os.getenv("JENNA_TTS_SPEED", "1.05"))
+TTS_SPEED = float(os.getenv("OMNISTORE_TTS_SPEED", "1.05"))
 
 # ─── Privacy-Gated Vision Permissions ─────────────────────────────────────
 VISION_PERMISSIONS_FILE = MEMORY_DIR / "vision_permissions.json"
@@ -389,13 +389,13 @@ LEARNINGS_FILE = OBSIDIAN_VAULT_PATH / "learnings.md"
 EVOLUTION_FILE = OBSIDIAN_VAULT_PATH / "self_evolution.md"
 
 # ─── Wake Word ────────────────────────────────────────────────────────────
-WAKE_WORD_ENABLED = os.getenv("JENNA_WAKE_WORD", "true").lower() == "true"
-WAKE_WORD_MODEL = str(WAKEWORD_MODELS_DIR / "hey_jenna.onnx")
+WAKE_WORD_ENABLED = os.getenv("OMNISTORE_WAKE_WORD", "true").lower() == "true"
+WAKE_WORD_MODEL = str(WAKEWORD_MODELS_DIR / "hey_omnistore.onnx")
 WAKE_WORD_MEL_PATH = str(WAKEWORD_MODELS_DIR / "melspectrogram.onnx")
 
 # ─── User Profile ─────────────────────────────────────────────────────────
-USER_NAME = os.getenv("JENNA_USER_NAME", "Jabs")
-ASSISTANT_NAME = os.getenv("JENNA_ASSISTANT_NAME", "Jenna")
+USER_NAME = os.getenv("OMNISTORE_USER_NAME", "Jabs")
+ASSISTANT_NAME = os.getenv("OMNISTORE_ASSISTANT_NAME", "OmniStore")
 
 # ─── Hotkey ───────────────────────────────────────────────────────────────
 if keyboard is None:
@@ -405,8 +405,8 @@ else:
     HOTKEY = {keyboard.Key.ctrl_l, keyboard.Key.alt_l, keyboard.Key.space}
 
 # ─── Dashboard & API ──────────────────────────────────────────────────────
-DASHBOARD_HOST = os.getenv("JENNA_HOST", "127.0.0.1")
-DASHBOARD_PORT = int(os.getenv("JENNA_PORT", "8787"))
+DASHBOARD_HOST = os.getenv("OMNISTORE_HOST", "127.0.0.1")
+DASHBOARD_PORT = int(os.getenv("OMNISTORE_PORT", "8787"))
 
 # ─── Telephony (AgentPhone) ───────────────────────────────────────────────
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
@@ -422,7 +422,7 @@ EMAIL_USER = os.getenv("GMAIL_USER", os.getenv("EMAIL_USER", ""))
 EMAIL_PASSWORD = os.getenv("GMAIL_APP_PASSWORD", os.getenv("EMAIL_PASSWORD", ""))
 
 # ─── Executor Safety ──────────────────────────────────────────────────────
-CONFIRM_BEFORE_EXECUTE = os.getenv("JENNA_CONFIRM_EXEC", "false").lower() == "true"
+CONFIRM_BEFORE_EXECUTE = os.getenv("OMNISTORE_CONFIRM_EXEC", "false").lower() == "true"
 REJECT_DANGEROUS_COMMANDS = True
 LOG_COMMANDS = True
 HISTORY_FILE = SANDBOX_DIR / "command_history.json"

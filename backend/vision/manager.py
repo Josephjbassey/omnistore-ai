@@ -11,7 +11,7 @@ from .camera import CameraCapture
 from .screen import ScreenCapture
 from .activity import MotionDetector
 
-logger = logging.getLogger("jenna.vision.manager")
+logger = logging.getLogger("omnistore.vision.manager")
 
 
 class VisionManager:

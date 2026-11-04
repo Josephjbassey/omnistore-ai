@@ -1,9 +1,9 @@
 """
-Voice I/O for Jenna-Unified desktop voice agent.
+Voice I/O for OmniStore AI desktop agent.
 
 STT: faster-whisper (CPU, tiny.en int8 — good balance for 8 GB RAM laptops)
 TTS: Piper (lightweight local neural TTS, fast on CPU) with Kokoro ONNX optional.
-Wake word: openWakeWord ONNX (hey_jenna.onnx).
+Wake word: openWakeWord ONNX (hey_omnistore.onnx).
 
 Both run fully offline — no cloud STT/TTS APIs, nothing leaves the machine.
 """
@@ -361,7 +361,7 @@ def speak(text: str) -> None:
 
 # ── Wake word ─────────────────────────────────────────────────────────────
 def build_wake_word_detector():
-    """Build an openWakeWord detector for hey_jenna.onnx, or return None if unavailable."""
+    """Build an openWakeWord detector for hey_omnistore.onnx, or return None if unavailable."""
     if not WAKE_WORD_ENABLED:
         return None
     if not os.path.exists(WAKE_WORD_MODEL):

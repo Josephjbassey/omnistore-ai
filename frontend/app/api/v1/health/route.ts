@@ -7,7 +7,7 @@ export async function GET(req: Request) {
 
   return NextResponse.json({
     status: "healthy",
-    assistant: "OmniStore AI (Jenna Platform)",
+    assistant: "OmniStore AI",
     version: "2.1.0",
     engine: fastApi.running ? "FastAPI & Next.js Hybrid" : "Next.js Edge Engine",
     fastapi_connected: fastApi.running,

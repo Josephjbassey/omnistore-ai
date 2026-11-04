@@ -1,8 +1,8 @@
-# Jenna AI OS — Suite Dashboard Concept Preview
+# OmniStore AI — Suite Dashboard Concept Preview
 
-Here is the concept design for the complete **Jenna AI OS Suite Dashboard**:
+Here is the concept design for the complete **OmniStore AI Suite Dashboard**:
 
-![Jenna AI OS Suite Dashboard Mockup](/home/jabs/.gemini/antigravity-ide/brain/053b94e3-6f53-4dc2-81cb-25e55caf7b75/jenna_suite_dashboard_1793024940582.jpg)
+![OmniStore AI Suite Dashboard Mockup](/home/jabs/.gemini/antigravity-ide/brain/053b94e3-6f53-4dc2-81cb-25e55caf7b75/omnistore_suite_dashboard_1793024940582.jpg)
 
 ---
 
@@ -51,10 +51,10 @@ Here is the concept design for the complete **Jenna AI OS Suite Dashboard**:
 ## Technical Implementation Plan
 
 1. **Frontend**:
-   * Single-page rich application in [overlay/index.html](file:///media/jabs/Development1/Linux/python/Jenna-Unified/overlay/index.html) with CSS glassmorphism, Three.js 3D WebGL particle sphere, and SVG graph visualizer.
-2. **Backend Bridge in [main.py](file:///media/jabs/Development1/Linux/python/Jenna-Unified/main.py)**:
+   * Single-page rich application in [overlay/index.html](file:///media/jabs/Development1/Linux/python/OmniStore-Unified/overlay/index.html) with CSS glassmorphism, Three.js 3D WebGL particle sphere, and SVG graph visualizer.
+2. **Backend Bridge in [main.py](file:///media/jabs/Development1/Linux/python/OmniStore-Unified/main.py)**:
    * Expose pywebview / FastAPI JavaScript API for:
      * Squad status & model switching.
      * Real-time system telemetry polling (`system_info`).
      * Obsidian vault reading, writing, and search (`obsidian_tools`).
-     * Live voice turn dispatch through `JennaGraphAgent`.
+     * Live voice turn dispatch through `OmniStoreGraphAgent`.

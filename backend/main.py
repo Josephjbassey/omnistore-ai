@@ -1,9 +1,11 @@
 """
-Jenna AI Assistant — FastAPI Backend Engine (v2.0)
+OmniStore AI — FastAPI Backend Engine (v2.1.0)
 Decoupled high-performance backend supporting real-time streaming,
 multimodal processing (SAM 3.1 & Muse Spark 1.3), and agentic workflows.
 """
 from __future__ import annotations
+import httpx
+import logging
 import os
 import sys
 from pathlib import Path
@@ -14,6 +16,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from dotenv import load_dotenv
+
+logger = logging.getLogger("omnistore.backend")
 
 # Ensure backend root and project root are in sys.path
 backend_dir = Path(__file__).resolve().parent
@@ -74,23 +78,22 @@ if allowed_origins_env and allowed_origins_env != "*":
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if allowed_origins_env == "*" else allowed_origins,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|.*\.vercel\.app)(:\d+)?$",
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins,
+    allow_origin_regex=None,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "x-meta-api-key"],
 )
 
 # ─── Global Error Handler ───────────────────────────────────────────────────
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    logger.exception(f"Unhandled error on {request.method} {request.url.path}: {exc}")
     return JSONResponse(
         status_code=500,
         content={
             "success": False,
-            "error_type": exc.__class__.__name__,
-            "message": str(exc),
-            "path": request.url.path,
+            "error": "internal server error",
         },
     )
 
@@ -130,18 +133,35 @@ async def root():
 @app.get("/api/v1/health", response_model=HealthResponse, tags=["General"])
 async def health_check():
     meta_key = bool(os.getenv("META_MODEL_API_KEY") or os.getenv("MODEL_API_KEY"))
+    providers = {
+        "meta_model_api": meta_key,
+        "sam_3_1": False,
+        "muse_spark_1_3": False,
+        "muse_code": False,
+        "background_queue": True,
+        "cross_agent_memory": True,
+    }
+    overall = "healthy"
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(connect=2.0, read=3.0)) as client:
+            # Probe Ollama /api/tags (used for SAM 3.1, Muse Spark 1.3, Muse Code local fallback)
+            try:
+                r = await client.get("http://localhost:11434/api/tags")
+                if r.status_code == 200:
+                    providers["sam_3_1"] = True
+                    providers["muse_spark_1_3"] = True
+                    providers["muse_code"] = True
+            except Exception:
+                pass
+    except Exception:
+        pass
+    if not any(providers[k] for k in ("sam_3_1", "muse_spark_1_3", "muse_code")):
+        overall = "degraded"
     return HealthResponse(
-        status="healthy",
-        assistant="OmniStore AI (Jenna Platform)",
+        status=overall,
+        assistant="OmniStore AI",
         version="2.1.0",
-        active_providers={
-            "meta_model_api": meta_key,
-            "sam_3_1": True,
-            "muse_spark_1_3": True,
-            "muse_code": True,
-            "background_queue": True,
-            "cross_agent_memory": True,
-        },
+        active_providers=providers,
     )
 
 
@@ -153,7 +173,7 @@ def start(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
 def start_cli(voice: bool = False):
     from backend.core.agent_core import Agent, load_skills
     agent = Agent("fast", load_skills())
-    print("\n[Jenna AI Assistant CLI] Type your prompt, or Ctrl+C to exit.\n")
+    print("\n[OmniStore AI CLI] Type your prompt, or Ctrl+C to exit.\n")
     while True:
         try:
             user_input = input("User> ")
@@ -161,7 +181,7 @@ def start_cli(voice: bool = False):
                 continue
             import asyncio
             reply = asyncio.run(agent.run_turn(user_input))
-            print(f"Jenna> {reply}\n")
+            print(f"OmniStore> {reply}\n")
         except (KeyboardInterrupt, EOFError):
             print("\nExiting CLI...")
             break
@@ -169,7 +189,7 @@ def start_cli(voice: bool = False):
 
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Jenna AI Assistant Engine")
+    parser = argparse.ArgumentParser(description="OmniStore AI Engine")
     parser.add_argument("--api", action="store_true", help="Start FastAPI HTTP Engine (default)")
     parser.add_argument("--cli", action="store_true", help="Terminal chat mode")
     parser.add_argument("--tui", action="store_true", help="Interactive Terminal UI")

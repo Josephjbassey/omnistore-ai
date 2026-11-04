@@ -40,10 +40,10 @@ def delegate_to_specialist(role: str, task: str) -> str:
             role = "coder"
 
     model_name = MODELS.get(role, MODELS.get("fast"))
-    role_meta = SQUAD_ROLES.get(role, {"name": f"Jenna {role.capitalize()}", "description": "Specialist agent"})
+    role_meta = SQUAD_ROLES.get(role, {"name": f"OmniStore {role.capitalize()}", "description": "Specialist agent"})
 
     sys_prompt = (
-        f"You are {role_meta.get('name')}, a specialized subagent in the Jenna AI squad.\n"
+        f"You are {role_meta.get('name')}, a specialized subagent in the OmniStore AI squad.\n"
         f"Your specialty: {role_meta.get('description')}.\n"
         f"Active model: {model_name}.\n"
         "Deliver clear, high-quality, practical output without fluff or unnecessary preamble."
@@ -88,7 +88,7 @@ def delegate_to_specialist(role: str, task: str) -> str:
 def list_squad_roles() -> str:
     """List the squad roles and active local models assigned to each role."""
     from config import MODELS, SQUAD_ROLES
-    lines = ["Active Jenna Squad Roster:"]
+    lines = ["Active OmniStore Squad Roster:"]
     for role_key, meta in SQUAD_ROLES.items():
         model = MODELS.get(role_key, "default")
         lines.append(f" - {meta.get('name')} ({role_key}): model='{model}' — {meta.get('description')}")

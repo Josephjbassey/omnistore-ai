@@ -1,6 +1,6 @@
-"""Document & Data Analysis Skill for Jenna-Unified.
+"""Document & Data Analysis Skill for OmniStore AI.
 
-Enables Jenna to:
+Enables OmniStore to:
 - Inspect and summarize CSV files
 - Parse and query JSON datasets
 - Summarize documentation files

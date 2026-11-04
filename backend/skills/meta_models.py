@@ -1,5 +1,5 @@
 """
-Meta Model API Skills for Jenna Agents
+Meta Model API Skills for OmniStore Agents
 Provides tools for Muse Spark, Muse Voice, Muse Image, and SAM 3.1
 """
 import os

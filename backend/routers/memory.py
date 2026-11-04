@@ -1,5 +1,5 @@
 """
-Memory Router for Jenna AI Assistant.
+Memory Router for OmniStore AI.
 Provides endpoints to search and inspect cross-agent conversation memory from SQLite+FTS5 store.
 """
 from __future__ import annotations
@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from fastapi import APIRouter, HTTPException
 
-# Add project root to sys.path to access jenna package
+# Add project root to sys.path to access omnistore package
 root_path = Path(__file__).resolve().parent.parent.parent
 if str(root_path) not in sys.path:
     sys.path.insert(0, str(root_path))
@@ -19,11 +19,11 @@ router = APIRouter(prefix="/api/v1/memory", tags=["Cross-Agent Memory"])
 
 def _get_memory_instance():
     try:
-        from backend.jenna.memory.cross_agent import get_cross_agent_memory
+        from backend.omnistore.memory.cross_agent import get_cross_agent_memory
         return get_cross_agent_memory()
     except Exception:
         try:
-            from jenna.memory.cross_agent import get_cross_agent_memory
+            from omnistore.memory.cross_agent import get_cross_agent_memory
             return get_cross_agent_memory()
         except Exception:
             return None

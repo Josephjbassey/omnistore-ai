@@ -44,7 +44,7 @@ module.exports = {
           amber: "#d97706",
           glow: "rgba(245, 158, 11, 0.35)",
         },
-        jenna: {
+        omnistore: {
           dark: "#090b0e",
           panel: "#0e131d",
           surface: "#141a27",

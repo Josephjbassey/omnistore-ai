@@ -1,5 +1,5 @@
 """
-Pydantic v2 Schemas for OmniStore AI (by Jenna AI Assistant).
+Pydantic v2 Schemas for OmniStore AI.
 Physical-to-Digital Micro-Commerce Engine (Build for Your World).
 Provides typed validation for:
   - SAM 3.1: Visual perception, spatial segmentation & item extraction
@@ -16,7 +16,7 @@ from datetime import datetime
 
 class HealthResponse(BaseModel):
     status: str = "healthy"
-    assistant: str = "OmniStore AI (Jenna Platform)"
+    assistant: str = "OmniStore AI"
     version: str = "2.1.0"
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     active_providers: Dict[str, bool] = Field(default_factory=dict)

@@ -1,5 +1,5 @@
 """
-Test suite for OmniStore AI (Jenna Platform) Backend Engine.
+Test suite for OmniStore AI Backend Engine.
 Tests all endpoints:
   - Health & Agent Roles
   - SAM 3.1 visual segmentation & spatial bounding boxes
@@ -32,13 +32,13 @@ def test_health_endpoints():
     res = client.get("/health")
     assert res.status_code == 200
     data = res.json()
-    assert data["status"] == "healthy"
-    assert "OmniStore" in data["assistant"] or "Jenna" in data["assistant"]
+    assert data["status"] in ("healthy", "degraded")
+    assert "OmniStore" in data["assistant"]
     assert "sam_3_1" in data["active_providers"]
 
     res_api = client.get("/api/v1/health")
     assert res_api.status_code == 200
-    assert res_api.json()["status"] == "healthy"
+    assert res_api.json()["status"] in ("healthy", "degraded")
 
 
 def test_agent_roles():

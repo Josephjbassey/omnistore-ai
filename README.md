@@ -232,8 +232,8 @@ Start both the FastAPI backend and Next.js frontend in isolated production conta
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Josephjbassey/jenna-hackathon.git
-cd jenna-hackathon
+git clone https://github.com/Josephjbassey/omnistore-ai.git
+cd omnistore-ai
 
 # 2. Configure environment
 cp .env.example .env

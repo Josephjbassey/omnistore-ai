@@ -1,4 +1,4 @@
-"""Deep Research & Web Intelligence Skill for Jenna-Unified.
+"""Deep Research & Web Intelligence Skill for OmniStore AI.
 
 Inspired by top agent research skills:
 - Live web search with DuckDuckGo Search (no API keys required)

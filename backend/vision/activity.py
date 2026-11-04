@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import logging
 
-logger = logging.getLogger("jenna.vision.activity")
+logger = logging.getLogger("omnistore.vision.activity")
 
 
 class MotionDetector:

@@ -1,5 +1,5 @@
 """
-LangGraph multi-agent orchestration graph for Jenna-Unified.
+LangGraph multi-agent orchestration graph for OmniStore AI.
 
 Implements a compiled StateGraph with:
 - Supervisor / Commander (fast model): triages user input, invokes tools, and routes complex tasks.
@@ -28,7 +28,7 @@ from core.agent_core import get_model_config, load_skills
 
 
 class SquadState(TypedDict):
-    """The central state flowing through the Jenna multi-agent graph."""
+    """The central state flowing through the OmniStore multi-agent graph."""
     messages: Annotated[Sequence[BaseMessage], add_messages]
     next_action: str
     active_role: str
@@ -72,8 +72,8 @@ def _create_specialist_llm(role: str, tools: Sequence[BaseTool]):
     return llm.bind_tools(tools)
 
 
-class JennaGraphAgent:
-    """Compiled LangGraph agent coordinating the Jenna squad."""
+class OmniStoreGraphAgent:
+    """Compiled LangGraph agent coordinating the OmniStore squad."""
 
     def __init__(self, tools: Sequence[BaseTool] = None):
         self.tools = list(tools or load_skills())
@@ -260,8 +260,8 @@ class JennaGraphAgent:
 # Global singleton factory
 _graph_agent = None
 
-def get_graph_agent() -> JennaGraphAgent:
+def get_graph_agent() -> OmniStoreGraphAgent:
     global _graph_agent
     if _graph_agent is None:
-        _graph_agent = JennaGraphAgent()
+        _graph_agent = OmniStoreGraphAgent()
     return _graph_agent

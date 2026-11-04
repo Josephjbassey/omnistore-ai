@@ -1,5 +1,5 @@
 """
-Background Jobs and Webhook Router for Jenna AI Assistant.
+Background Jobs and Webhook Router for OmniStore AI.
 Manages long-running multimodal inference pipelines, polling, and status tracking.
 """
 from __future__ import annotations

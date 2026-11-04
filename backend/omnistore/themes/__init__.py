@@ -1,5 +1,5 @@
 """
-Jenna Multi-Theme System
+OmniStore Multi-Theme System
 Loads Omarchy themes (colors.toml) and maps them to dashboard design tokens.
 Supports live theme switching with CSS custom properties.
 """
@@ -78,10 +78,10 @@ class OmarchyTheme:
             bright_magenta=data["bright_magenta"],
         )
 
-    def to_css_vars(self, prefix: str = "jenna") -> dict[str, str]:
-        """Map Omarchy colors to Jenna dashboard design tokens."""
+    def to_css_vars(self, prefix: str = "omnistore") -> dict[str, str]:
+        """Map Omarchy colors to OmniStore dashboard design tokens."""
         is_dark = self.mode == "dark"
-        # Base surfaces - map to Jenna's 3-layer depth
+        # Base surfaces - map to OmniStore's 3-layer depth
         bg_base = self.darker_background if is_dark else self.background
         bg_surface = self.dark_background if is_dark else self.dark_background
         bg_raised = self.background if is_dark else self.lighter_background
@@ -126,14 +126,14 @@ class ThemeRegistry:
     """Discovers and loads all available Omarchy themes."""
     SYSTEM_THEME_DIR: ClassVar[Path] = Path("/usr/share/omarchy/themes")
     USER_THEME_DIR: ClassVar[Path] = Path.home() / ".config" / "omarchy" / "themes"
-    JENNA_THEME_DIR: ClassVar[Path] = Path.home() / ".config" / "jenna" / "themes"
+    OMNISTORE_THEME_DIR: ClassVar[Path] = Path.home() / ".config" / "omnistore" / "themes"
 
     def __init__(self):
         self._themes: dict[str, OmarchyTheme] = {}
         self._load_all()
 
     def _load_all(self):
-        for theme_dir in (self.SYSTEM_THEME_DIR, self.USER_THEME_DIR, self.JENNA_THEME_DIR):
+        for theme_dir in (self.SYSTEM_THEME_DIR, self.USER_THEME_DIR, self.OMNISTORE_THEME_DIR):
             if not theme_dir.exists():
                 continue
             for colors_file in theme_dir.glob("*/colors.toml"):
@@ -166,7 +166,7 @@ class ThemeRegistry:
         # Fallback: check hyprland colors or current theme symlink
         return "quattro"  # Default from earlier detection
 
-    def css_variables(self, theme_name: str | None = None, prefix: str = "jenna") -> str:
+    def css_variables(self, theme_name: str | None = None, prefix: str = "omnistore") -> str:
         """Generate :root CSS custom properties for a theme."""
         theme = self.get(theme_name or self.current_omarchy_theme() or "catppuccin")
         if not theme:
