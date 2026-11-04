@@ -1,32 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
-  <defs>
-    <linearGradient id="omni-grad-lg" x1="32" y1="32" x2="480" y2="480" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#10b981" />
-      <stop offset="50%" stop-color="#06b6d4" />
-      <stop offset="100%" stop-color="#3b82f6" />
-    </linearGradient>
-    <radialGradient id="glow-bg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="rgba(16, 185, 129, 0.25)" />
-      <stop offset="100%" stop-color="rgba(8, 9, 10, 0)" />
-    </radialGradient>
-  </defs>
-  <!-- Background Obsidian Tile -->
-  <rect width="512" height="512" rx="120" fill="#08090a" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
-  <circle cx="256" cy="256" r="220" fill="url(#glow-bg)" />
-
-  <!-- Market Canopy Top Geometry -->
-  <path d="M96 184L256 96L416 184V216L256 136L96 216V184Z" fill="url(#omni-grad-lg)" />
-
-  <!-- Hexagonal Spatial Lens Framework -->
-  <path d="M256 176L384 256V352L256 432L128 352V256L256 176Z" stroke="url(#omni-grad-lg)" stroke-width="24" stroke-linejoin="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Deep Obsidian Tile -->
+  <rect width="100" height="100" rx="24" fill="#08090a" stroke="rgba(255,255,255,0.12)" stroke-width="2" />
   
-  <!-- Optical Aperture Iris -->
-  <circle cx="256" cy="304" r="48" fill="#10b981" />
-  <circle cx="256" cy="304" r="24" fill="#ffffff" />
-  
-  <!-- Precision Reticle Crosshairs -->
-  <line x1="144" y1="304" x2="176" y2="304" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
-  <line x1="336" y1="304" x2="368" y2="304" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
-  <line x1="256" y1="224" x2="256" y2="244" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
-  <line x1="256" y1="364" x2="256" y2="384" stroke="#34d399" stroke-width="16" stroke-linecap="round" />
+  <!-- Subtle Ambient Glow -->
+  <circle cx="50" cy="50" r="42" fill="rgba(16, 185, 129, 0.08)" />
+
+  <!-- 10 Interlocking Petals Aperture -->
+  <g>
+    <path id="petal_1" d="M 13.5,33.6 L 29.7,34.8 L 26.4,40.4 L 25.4,43.2 L 24.6,47.7 L 24.8,54.3 L 26.0,58.8 L 27.9,62.5 L 30.3,66.0 L 34.0,69.9 L 27.2,70.7 L 24.4,70.3 L 21.1,69.1 L 16.4,66.0 L 13.7,63.3 L 10.4,58.6 L 8.0,53.3 L 7.2,50.2 L 6.5,42.4 L 7.6,37.9 L 8.8,35.9 L 11.5,34.0 L 13.5,33.6 Z" fill="#96a8b4" />
+    <path id="petal_2" d="M 83.0,61.3 L 90.4,61.3 L 93.3,61.9 L 91.0,68.7 L 87.5,74.8 L 83.0,80.1 L 75.4,86.1 L 68.7,89.6 L 59.8,92.2 L 59.4,90.8 L 59.8,82.6 L 61.7,77.1 L 65.0,71.7 L 71.7,65.4 L 77.5,62.5 L 83.0,61.3 Z" fill="#cab695" />
+    <path id="petal_3" d="M 72.1,12.3 L 77.7,15.6 L 82.8,19.9 L 87.7,25.8 L 90.8,31.1 L 93.7,38.9 L 94.7,44.3 L 94.7,55.9 L 93.0,53.1 L 89.8,49.6 L 85.7,47.3 L 77.7,45.1 L 75.2,43.0 L 73.8,40.8 L 72.5,34.8 L 73.6,23.6 L 73.6,17.6 L 72.1,12.3 Z" fill="#526569" />
+    <path id="petal_4" d="M 34.8,9.2 L 35.9,9.4 L 37.3,12.5 L 38.3,19.3 L 36.9,25.6 L 35.2,28.5 L 33.2,30.7 L 31.3,31.6 L 27.9,32.0 L 19.5,30.7 L 13.5,30.5 L 13.3,30.9 L 11.1,30.9 L 8.6,31.8 L 12.9,24.6 L 20.1,17.0 L 25.4,13.3 L 34.8,9.2 Z" fill="#c1793f" />
+    <path id="petal_5" d="M 45.5,75.0 L 48.8,75.2 L 51.4,76.2 L 53.9,78.5 L 54.9,81.6 L 54.9,83.6 L 53.7,86.7 L 51.2,89.4 L 48.0,91.0 L 43.9,91.8 L 37.9,91.6 L 35.2,91.0 L 27.9,88.1 L 21.7,84.2 L 28.3,85.9 L 33.6,85.1 L 37.5,82.6 L 42.2,76.4 L 45.5,75.0 Z" fill="#975151" />
+    <path id="petal_6" d="M 5.1,53.9 L 7.4,59.4 L 10.6,64.3 L 14.3,68.2 L 19.5,71.7 L 26.0,73.8 L 32.4,73.6 L 37.1,71.9 L 41.2,73.4 L 39.5,74.8 L 36.9,78.9 L 34.4,81.2 L 32.4,82.2 L 29.1,82.8 L 26.0,82.4 L 20.7,80.3 L 16.0,77.3 L 11.3,73.2 L 9.0,69.1 L 6.1,61.5 L 5.1,53.9 Z" fill="#788166" />
+    <path id="petal_7" d="M 59.6,10.0 L 62.5,10.2 L 64.6,11.1 L 67.4,13.7 L 68.5,15.8 L 68.7,18.2 L 67.8,21.9 L 64.3,25.4 L 61.7,26.2 L 58.4,26.0 L 55.7,24.8 L 53.3,21.9 L 52.5,19.7 L 52.5,16.8 L 53.9,13.3 L 55.7,11.5 L 59.6,10.0 Z" fill="#5a5746" />
+    <path id="petal_8" d="M 48.4,7.2 L 56.4,7.6 L 54.5,8.6 L 51.6,11.3 L 49.6,15.1 L 49.4,20.3 L 51.8,25.4 L 45.3,25.6 L 39.3,27.5 L 41.0,22.7 L 41.4,17.8 L 40.8,13.3 L 38.7,8.4 L 48.4,7.2 Z" fill="#6a3f49" />
+    <path id="petal_9" d="M 75.0,47.1 L 77.9,48.6 L 84.4,50.2 L 87.1,51.4 L 90.8,55.1 L 92.2,58.4 L 89.2,58.0 L 82.4,58.2 L 77.1,59.4 L 72.5,61.5 L 74.2,57.6 L 75.0,53.9 L 75.0,47.1 Z" fill="#abae99" />
+    <path id="petal_10" d="M 70.3,23.6 L 69.3,34.2 L 66.8,31.6 L 63.3,28.9 L 67.4,27.0 L 70.3,23.6 Z" fill="#98aab4" />
+  </g>
 </svg>
