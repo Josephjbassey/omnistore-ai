@@ -197,7 +197,7 @@ p {
 }
 
 .input-label {
-  @apply block text-xs font-medium text-tertiary uppercase tracking-wider mb-1.5;
+  @apply block text-xs font-medium text-slate-400 uppercase tracking-wider mb-1.5;
   color: var(--text-tertiary);
 }
 
