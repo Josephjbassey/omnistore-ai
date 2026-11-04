@@ -321,64 +321,6 @@ export default function Home() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* Merchant Account & Store Status Bar */}
-        {isLoading ? null : (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#10141d] border border-white/[0.08] rounded-2xl p-3 sm:p-4 backdrop-blur-md shadow-sm">
-            {isAuthenticated && user ? (
-              <>
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2 bg-[#161c28] border border-[#cab695]/20 rounded-xl px-3 py-1">
-                    <span className="w-2 h-2 rounded-full bg-[#25D366]" />
-                    <span className="text-xs font-semibold text-[#f7f8f9]">{user.full_name}</span>
-                  </div>
-                  <span className="text-[11px] font-mono text-[#cab695] uppercase tracking-wider font-semibold">
-                    {merchantContext.store_name} · {merchantContext.location}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setActiveTab("storefront")}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#c1793f] hover:bg-[#d68749] text-white shadow-sm transition-all active:scale-[0.98]"
-                  >
-                    View Live Storefront
-                  </button>
-                  <button
-                    onClick={logout}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161c28] hover:bg-[#1f2738] text-zinc-300 border border-white/10 transition-all active:scale-[0.98]"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-2 text-xs font-medium text-zinc-300">
-                <div className="flex items-center space-x-2">
-                  <span className="w-2 h-2 rounded-full bg-[#c1793f]" />
-                  <span className="font-semibold text-[#f7f8f9]">Merchant Studio</span>
-                  <span className="text-zinc-500">·</span>
-                  <span className="text-zinc-400 font-mono text-[11px]">
-                    Active Stall: {merchantContext.store_name} ({merchantContext.location})
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => router.push("/auth/login")}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#161c28] hover:bg-[#1f2738] text-zinc-200 border border-white/10 transition-all active:scale-[0.98]"
-                  >
-                    Sign in
-                  </button>
-                  <button
-                    onClick={() => router.push("/auth/register")}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#c1793f] hover:bg-[#d68749] text-white shadow-sm transition-all active:scale-[0.98]"
-                  >
-                    Create Merchant Account
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* HERO SECTION: Tailored based on View Mode */}
         {viewMode === "merchant" ? (
           /* Merchant / Store Owner Experience Header */

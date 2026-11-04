@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "OmniStore AI — Physical-to-Digital Micro-Commerce Engine",
@@ -50,7 +51,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-[#08090a] text-[#f7f8f8] antialiased selection:bg-[#10b981] selection:text-[#06110d] font-sans">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <Header />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
