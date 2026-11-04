@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "omnistore-backend"
-version = "2.0.0"
+version = "2.1.0"
 description = "FastAPI backend engine for OmniStore AI with SAM 3.1 & Muse Spark"
 authors = [{ name = "OmniStore Hackathon Team" }]
 requires-python = ">=3.10"

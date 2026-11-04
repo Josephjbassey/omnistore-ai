@@ -16,6 +16,8 @@ import base64
 import random
 import asyncio
 import logging
+import re
+
 from typing import List, Dict, Any, Optional, AsyncGenerator
 import httpx
 from fastapi import Header
@@ -206,69 +208,173 @@ class MetaModelService:
             img_bytes = _b64.b64decode(raw_b64)
             img = _PILImage.open(_io.BytesIO(img_bytes)).convert("RGB")
             width, height = img.size
-            arr = _np.array(img)
 
-            # Simple region detection: quantize colors, find contiguous blobs
-            # Work on a downscaled copy for speed
-            small = img.resize((max(1, width // 8), max(1, height // 8)))
-            small_arr = _np.array(small).astype(_np.float32)
-            h, w, _ = small_arr.shape
+            # Downscale for speed (max 160px on longest side)
+            max_dim = 160
+            if max(width, height) > max_dim:
+                sc = max_dim / max(width, height)
+                proc_size = (max(1, int(width * sc)), max(1, int(height * sc)))
+            else:
+                proc_size = (width, height)
+                sc = 1.0
 
-            # K-means-like color clustering into up to 8 dominant colors
-            pixels = small_arr.reshape(-1, 3)
-            # Pick seed colors from grid
-            seeds = []
-            for gy in range(0, h, max(1, h // 4)):
-                for gx in range(0, w, max(1, w // 4)):
-                    seeds.append(small_arr[gy, gx])
-            if not seeds:
-                seeds = [small_arr[h // 2, w // 2]]
+            small = img.resize(proc_size)
+            pw, ph = small.size
+            arr = _np.array(small).astype(_np.float32) / 255.0  # (ph, pw, 3)
 
-            # Assign each pixel to nearest seed
-            seed_arr = _np.array(seeds)  # (k, 3)
-            dists = _np.sqrt(((pixels[:, None, :] - seed_arr[None, :, :]) ** 2).sum(axis=2))
-            labels = dists.argmin(axis=1).reshape(h, w)
+            # ── RGB → HSV ──
+            r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+            mx = _np.maximum(_np.maximum(r, g), b)
+            mn = _np.minimum(_np.minimum(r, g), b)
+            v = mx
+            s = _np.where(mx > 0, (mx - mn) / _np.where(mx > 0, mx, 1.0), 0.0)
+            h = _np.zeros_like(mx)
+            mask = mx != mn
+            h = _np.where(mask & (mx == r), 60.0 * (((g - b) / (mx - mn + 1e-6)) % 6), h)
+            h = _np.where(mask & (mx == g), 60.0 * (((b - r) / (mx - mn + 1e-6)) + 2), h)
+            h = _np.where(mask & (mx == b), 60.0 * (((r - g) / (mx - mn + 1e-6)) + 4), h)
+            h = _np.where(h < 0, h + 360.0, h) / 360.0  # normalize [0,1]
 
-            # Find bounding boxes for each dominant color cluster
+            # ── Grid-based cell analysis (12x12) ──
+            gy_count, gx_count = 12, 12
+            cell_h = ph / gy_count
+            cell_w = pw / gx_count
+            cells = []
+            for gy in range(gy_count):
+                for gx in range(gx_count):
+                    y0 = int(gy * cell_h)
+                    y1 = max(y0 + 1, int((gy + 1) * cell_h))
+                    x0 = int(gx * cell_w)
+                    x1 = max(x0 + 1, int((gx + 1) * cell_w))
+                    ch = h[y0:y1, x0:x1]
+                    cs = s[y0:y1, x0:x1]
+                    cv = v[y0:y1, x0:x1]
+                    mh, ms, mv = float(_np.mean(ch)), float(_np.mean(cs)), float(_np.mean(cv))
+                    act = float(_np.std(ch) + _np.std(cs) + _np.std(cv))
+                    cells.append({
+                        "gy": gy, "gx": gx, "y0": y0, "y1": y1, "x0": x0, "x1": x1,
+                        "h": mh, "s": ms, "v": mv, "activity": act,
+                    })
+
+            # Keep only cells with enough texture/color variation (not flat background)
+            active = [c for c in cells if c["activity"] > 0.025]
+
+            def hue_dist(h1, h2):
+                d = abs(h1 - h2)
+                return min(d, 1.0 - d)  # wraparound
+
+            def color_dist(c1, c2):
+                return hue_dist(c1["h"], c2["h"]) * 0.5 + abs(c1["s"] - c2["s"]) * 0.3 + abs(c1["v"] - c2["v"]) * 0.2
+
+            # ── Neighbor-based union-find: merge adjacent color-similar cells ──
+            # Only cells that touch (4-connected) AND are color-similar merge.
+            # This prevents distant same-color regions (e.g. crates on opposite
+            # sides of the image) from collapsing into one giant box.
+            cell_index = {(c["gy"], c["gx"]): i for i, c in enumerate(active)}
+            parent = list(range(len(active)))
+
+            def find(x):
+                while parent[x] != x:
+                    parent[x] = parent[parent[x]]
+                    x = parent[x]
+                return x
+
+            def union(x, y):
+                rx, ry = find(x), find(y)
+                if rx != ry:
+                    parent[rx] = ry
+
+            for ci, c in enumerate(active):
+                for dy, dx in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+                    neighbor = (c["gy"] + dy, c["gx"] + dx)
+                    if neighbor in cell_index:
+                        nj = cell_index[neighbor]
+                        if color_dist(c, active[nj]) < 0.10:
+                            union(ci, nj)
+
+            # Group cells by union-find root
+            groups = {}
+            for ci in range(len(active)):
+                root = find(ci)
+                groups.setdefault(root, []).append(active[ci])
+
+            # ── Each group → one or more detected regions ──
             detected = []
-            for cluster_id in range(len(seeds)):
-                mask = labels == cluster_id
-                if mask.sum() < (h * w * 0.02):  # ignore tiny clusters (<2%)
+            for group_cells in groups.values():
+                if len(group_cells) < 1:
                     continue
-                ys, xs = _np.where(mask)
-                if len(ys) == 0:
-                    continue
-                ymin, ymax = int(ys.min()), int(ys.max())
-                xmin, xmax = int(xs.min()), int(xs.max())
-                # Scale back to original resolution
-                bx = [round(xmin / w, 4), round(ymin / h, 4), round(xmax / w, 4), round(ymax / h, 4)]
-                # bbox format is [ymin, xmin, ymax, xmax]
-                bbox = [bx[1], bx[0], bx[3], bx[2]]
-                area = int((ymax - ymin) * (xmax - xmin))
-                label = f"Item {cluster_id + 1}"
-                conf = round(0.75 + 0.2 * (mask.sum() / (h * w)), 2)
-                detected.append(
-                    BoundingBox(
-                        box_id=f"seg_{len(detected) + 1}",
-                        label=label,
-                        confidence=min(conf, 0.99),
-                        bbox=bbox,
-                        area=area,
-                        description=f"Detected product region {len(detected) + 1} from uploaded shelf photo",
-                    )
-                )
+                ys = [c["y0"] for c in group_cells] + [c["y1"] for c in group_cells]
+                xs = [c["x0"] for c in group_cells] + [c["x1"] for c in group_cells]
+                py0, py1 = min(ys), max(ys)
+                px0, px1 = min(xs), max(xs)
+                group_area = (py1 - py0) * (px1 - px0)
+
+                # ── Subdivide oversized groups ──
+                # A single connected region covering >30% of the image is usually
+                # multiple adjacent crates of similar wood color. Split into a
+                # 4x4 grid so each crate becomes its own detection box.
+                sub_divs = 1
+                if group_area > (ph * pw * 0.30):
+                    sub_divs = 4
+
+                sub_h = (py1 - py0) / sub_divs
+                sub_w = (px1 - px0) / sub_divs
+                for sy in range(sub_divs):
+                    for sx in range(sub_divs):
+                        sy0 = int(py0 + sy * sub_h)
+                        sy1 = max(sy0 + 1, int(py0 + (sy + 1) * sub_h))
+                        sx0 = int(px0 + sx * sub_w)
+                        sx1 = max(sx0 + 1, int(px0 + (sx + 1) * sub_w))
+                        sub_area = (sy1 - sy0) * (sx1 - sx0)
+                        if sub_area < (ph * pw * 0.008):
+                            continue
+                        # Scale back to original image coords
+                        oy0, oy1 = sy0 / ph * height, sy1 / ph * height
+                        ox0, ox1 = sx0 / pw * width, sx1 / pw * width
+                        bbox = [round(oy0 / height, 4), round(ox0 / width, 4), round(oy1 / height, 4), round(ox1 / width, 4)]
+                        area = int((oy1 - oy0) * (ox1 - ox0))
+                        # Mean hue of cells within this sub-region
+                        sub_cells = [c for c in group_cells if c["y0"] < sy1 and c["y1"] > sy0 and c["x0"] < sx1 and c["x1"] > sx0]
+                        if sub_cells:
+                            mean_h = float(_np.mean([c["h"] for c in sub_cells]))
+                        else:
+                            mean_h = float(_np.mean([c["h"] for c in group_cells]))
+                        hue = mean_h * 360.0
+                        if hue < 15 or hue >= 345:
+                            label = "Red Produce"
+                        elif hue < 45:
+                            label = "Orange Produce"
+                        elif hue < 75:
+                            label = "Yellow Produce"
+                        elif hue < 165:
+                            label = "Green Produce"
+                        elif hue < 200:
+                            label = "Blue Produce"
+                        elif hue < 270:
+                            label = "Purple Produce"
+                        else:
+                            label = "Pink Produce"
+                        conf = round(0.60 + 0.25 * min(1.0, len(sub_cells) / 6.0), 2)
+                        detected.append(BoundingBox(
+                            box_id=f"seg_{len(detected) + 1}",
+                            label=label,
+                            confidence=min(conf, 0.95),
+                            bbox=bbox,
+                            area=area,
+                            description=f"Detected {label.lower()} region from uploaded shelf photo",
+                        ))
 
             # Sort by area descending, cap at max_segments
             detected.sort(key=lambda b: b.area or 0, reverse=True)
             selected_boxes = [b for b in detected if b.confidence >= confidence_threshold][:max_segments]
 
-            # If CV found nothing useful, fall back to a single full-frame box
+            # Last-resort single-box fallback
             if not selected_boxes:
                 selected_boxes = [
                     BoundingBox(
                         box_id="seg_001",
                         label="Store Shelf",
-                        confidence=0.6,
+                        confidence=0.5,
                         bbox=[0.05, 0.05, 0.95, 0.95],
                         area=int(width * height * 0.8),
                         description="Full frame detection (no distinct regions found)",
@@ -525,7 +631,7 @@ class MetaModelService:
         ).strip().rstrip("/")
         if not app_base.startswith("http://") and not app_base.startswith("https://"):
             app_base = f"https://{app_base}"
-        store_slug = schema.store_title.lower().replace(" ", "-").replace("'", "")
+        store_slug = re.sub(r"-+", "-", schema.store_title.lower().replace(" ", "-").replace("'", ""))
         preview_url = f"{app_base}/store/{store_slug}"
 
         # Live Meta Model API call

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Store,
   MapPin,
@@ -23,14 +23,19 @@ import { STALL_PRESETS, StallPreset } from "@/lib/presets";
 import { StorefrontSchema, InventoryItem } from "@/lib/api";
 
 export default function StorefrontPage() {
-  const params = useParams();
-  const slug = (params?.slug as string) || "lagos-produce";
+  // Next.js 14 compatible: extract slug from pathname (useParams() is Next.js 15+)
+  const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+  const rawSlug = segments.length > 1 ? segments[segments.length - 1] : "lagos-produce";
+  // Collapse multiple dashes and trim leading/trailing dashes for matching
+  const slug = rawSlug.replace(/-+/g, "-").replace(/^-|-$/g, "");
 
-  // Find matching preset or fall back to first preset
+  // Find matching preset by id or normalized name
   const matchedPreset =
     STALL_PRESETS.find(
       (p) =>
         p.id === slug ||
+        p.id === rawSlug ||
         p.name.toLowerCase().replace(/[^a-z0-9]/g, "-") === slug ||
         p.name.toLowerCase().replace(/\s+/g, "-") === slug
     ) || STALL_PRESETS[0];
@@ -115,9 +120,9 @@ export default function StorefrontPage() {
           ).toLocaleString()} ${currency})`
       );
     const msg = encodeURIComponent(
-      `Hello ${schema.store_title}! I would like to place an order from your online store:\n\n${lines.join(
-        "\n"
-      )}\n\n*Total Due:* ${totalPrice.toLocaleString()} ${currency}\n\nDelivery Location: Please confirm delivery or pickup.`
+      `Hello ${schema.store_title}! I would like to place an order from your online store:\\n\\n${lines.join(
+        "\\n"
+      )}\\n\\n*Total Due:* ${totalPrice.toLocaleString()} ${currency}\\n\\nDelivery Location: Please confirm delivery or pickup.`
     );
     const phone =
       schema.whatsapp_number?.replace(/[^0-9]/g, "") || "2348012345678";
@@ -165,7 +170,7 @@ export default function StorefrontPage() {
                 </>
               ) : (
                 <>
-                  <Share2 className="w-3.5 h-3.5" />
+                  <Share2 className="w-3 h-3" />
                   <span>Share</span>
                 </>
               )}
