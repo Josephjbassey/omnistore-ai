@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { tryFastApiProxy } from "@/lib/server-api";
+import { saveStoreToCache } from "@/lib/store-cache";
 
 export async function POST(req: Request) {
   const proxyRes = await tryFastApiProxy("/api/v1/code/generate", req);
@@ -9,13 +10,16 @@ export async function POST(req: Request) {
 
   const payload = await req.json().catch(() => ({}));
   const schema = payload.store_schema || payload;
-  const storeName = schema.store_name || "Mama Cass Market";
+  const storeName = schema.store_title || schema.store_name || "Mama Cass Market";
   const whatsapp = schema.whatsapp_number || "+2348012345678";
-  const slug = storeName.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const slug = storeName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "lagos-produce";
   let appUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://omnistore-sandy.vercel.app").trim().replace(/\/+$/, "");
   if (!appUrl.startsWith("http://") && !appUrl.startsWith("https://")) {
     appUrl = `https://${appUrl}`;
   }
+
+  // Persist schema to store cache so /store/[slug] loads this exact customized store
+  saveStoreToCache(slug, schema);
 
   return NextResponse.json({
     success: true,

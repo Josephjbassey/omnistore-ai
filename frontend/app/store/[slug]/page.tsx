@@ -41,6 +41,35 @@ export default function StorefrontPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
+  // Load dynamically generated/customized store from client storage or server cache
+  useEffect(() => {
+    try {
+      const localStore =
+        localStorage.getItem(`omnistore_store_${slug}`) ||
+        localStorage.getItem("omnistore_active_store");
+      if (localStore) {
+        const parsed = JSON.parse(localStore);
+        if (parsed && Array.isArray(parsed.inventory) && parsed.inventory.length > 0) {
+          setSchema(parsed);
+        }
+      }
+    } catch {}
+
+    fetch(`/api/v1/store/${slug}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (
+          data.success &&
+          data.schema &&
+          Array.isArray(data.schema.inventory) &&
+          data.schema.inventory.length > 0
+        ) {
+          setSchema(data.schema);
+        }
+      })
+      .catch(() => {});
+  }, [slug]);
+
   const inventory = schema.inventory || [];
   const currency = schema.currency || "NGN";
 
