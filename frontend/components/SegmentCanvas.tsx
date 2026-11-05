@@ -27,7 +27,6 @@ import {
   PipelineResponse,
   scanStoreJson,
 } from "@/lib/api";
-import { ViewMode } from "./ModeToggleHeader";
 import { compressStallImage } from "@/lib/image-compress";
 
 interface SegmentCanvasProps {
@@ -37,9 +36,7 @@ interface SegmentCanvasProps {
   onSelectBox: (box: BoundingBox) => void;
   selectedBoxId?: string | null;
   stallImageUrl?: string;
-  presetBoxes?: BoundingBox[];
   inventoryThumbnails?: Record<string, string>;
-  viewMode?: ViewMode;
 }
 
 export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
@@ -49,9 +46,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
   onSelectBox,
   selectedBoxId: externalSelectedBoxId,
   stallImageUrl = "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=1280&q=80",
-  presetBoxes,
   inventoryThumbnails = {},
-  viewMode = "merchant",
 }) => {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [isCompressing, setIsCompressing] = useState<boolean>(false);
@@ -70,31 +65,6 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-
-  // Sync internal selection when external changes
-  useEffect(() => {
-    if (externalSelectedBoxId) {
-      setInternalSelectedBoxId(externalSelectedBoxId);
-    }
-  }, [externalSelectedBoxId]);
-
-  // Sync segmentData when preset or stallImageUrl changes
-  useEffect(() => {
-    if (presetBoxes && presetBoxes.length > 0 && !customImage) {
-      setSegmentData({
-        success: true,
-        model_used: "sam-3.1",
-        image_width: 1280,
-        image_height: 720,
-        bounding_boxes: presetBoxes,
-        crops: [],
-        processing_time_ms: 380,
-        total_segments: presetBoxes.length,
-      });
-      setInternalSelectedBoxId(presetBoxes[0].box_id);
-      onSelectBox(presetBoxes[0]);
-    }
-  }, [presetBoxes, stallImageUrl, customImage, onSelectBox]);
 
   const executeFullScan = useCallback(
     async (uploadedBase64?: string) => {
@@ -140,12 +110,19 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
     [customImage, stallImageUrl, merchantContext, onPipelineComplete, onSelectBox]
   );
 
+  // Sync internal selection when external changes
+  useEffect(() => {
+    if (externalSelectedBoxId) {
+      setInternalSelectedBoxId(externalSelectedBoxId);
+    }
+  }, [externalSelectedBoxId]);
+
   // Initial scan on mount
   useEffect(() => {
-    if (!segmentData && (!presetBoxes || presetBoxes.length === 0)) {
+    if (!segmentData) {
       executeFullScan();
     }
-  }, [executeFullScan, presetBoxes, segmentData]);
+  }, [executeFullScan, segmentData]);
 
   // Handle client-side image optimization
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,20 +155,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
   const handleResetToPreset = () => {
     setCustomImage(null);
     setCompressionInfo(null);
-    if (presetBoxes && presetBoxes.length > 0) {
-      setSegmentData({
-        success: true,
-        model_used: "sam-3.1",
-        image_width: 1280,
-        image_height: 720,
-        bounding_boxes: presetBoxes,
-        crops: [],
-        processing_time_ms: 380,
-        total_segments: presetBoxes.length,
-      });
-      setInternalSelectedBoxId(presetBoxes[0].box_id);
-      onSelectBox(presetBoxes[0]);
-    }
+    executeFullScan();
   };
 
   // Draw SAM 3.1 Overlays on HTML5 Canvas in Judge Mode only
@@ -203,10 +167,6 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!segmentData) return;
-
-    if (viewMode === "merchant") {
-      return;
-    }
 
     segmentData.bounding_boxes.forEach((box) => {
       const [ymin, xmin, ymax, xmax] = box.bbox;
@@ -262,7 +222,7 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
       ctx.restore();
     });
-  }, [segmentData, hoveredBoxId, selectedBoxId, viewMode]);
+  }, [segmentData, hoveredBoxId, selectedBoxId]);
 
   return (
     <div className="flex flex-col h-full bg-[#10141d] rounded-2xl border border-white/[0.08] p-4 sm:p-5 shadow-sm">
@@ -364,22 +324,13 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
 
       {/* Action / Trigger Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 py-3">
-        {viewMode === "judge" ? (
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-[#c1793f] animate-pulse" />
-            <h2 className="font-semibold text-xs text-white uppercase tracking-wider font-mono">
-              SAM 3.1 Spatial Perception Canvas
-            </h2>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-2">
-            <Camera className="w-4 h-4 text-[#c1793f]" />
-            <h2 className="font-semibold text-xs text-white">Stall Photography</h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#182030] text-[#cab695] border border-white/10">
-              Live Shelf
-            </span>
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+          <Camera className="w-4 h-4 text-[#c1793f]" />
+          <h2 className="font-semibold text-xs text-white">Stall Photography</h2>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#182030] text-[#cab695] border border-white/10">
+            Live Shelf
+          </span>
+        </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {compressionInfo && (
@@ -452,45 +403,43 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
           </span>
         </div>
 
-        {/* Interactive Canvas in Judge Mode */}
-        {viewMode === "judge" && (
-          <canvas
-            ref={canvasRef}
-            width={1280}
-            height={720}
-            className="absolute inset-0 w-full h-full object-contain cursor-crosshair z-10"
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const clickX = (e.clientX - rect.left) / rect.width;
-              const clickY = (e.clientY - rect.top) / rect.height;
+        {/* Interactive Canvas */}
+        <canvas
+          ref={canvasRef}
+          width={1280}
+          height={720}
+          className="absolute inset-0 w-full h-full object-contain cursor-crosshair z-10"
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) / rect.width;
+            const clickY = (e.clientY - rect.top) / rect.height;
 
-              if (segmentData) {
-                const clicked = segmentData.bounding_boxes.find((b) => {
-                  const [ymin, xmin, ymax, xmax] = b.bbox;
-                  return clickX >= xmin && clickX <= xmax && clickY >= ymin && clickY <= ymax;
-                });
-                if (clicked) {
-                  setInternalSelectedBoxId(clicked.box_id);
-                  onSelectBox(clicked);
-                }
+            if (segmentData) {
+              const clicked = segmentData.bounding_boxes.find((b) => {
+                const [ymin, xmin, ymax, xmax] = b.bbox;
+                return clickX >= xmin && clickX <= xmax && clickY >= ymin && clickY <= ymax;
+              });
+              if (clicked) {
+                setInternalSelectedBoxId(clicked.box_id);
+                onSelectBox(clicked);
               }
-            }}
-            onMouseMove={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const x = (e.clientX - rect.left) / rect.width;
-              const y = (e.clientY - rect.top) / rect.height;
+            }
+          }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
 
-              if (segmentData) {
-                const hovered = segmentData.bounding_boxes.find((b) => {
-                  const [ymin, xmin, ymax, xmax] = b.bbox;
-                  return x >= xmin && x <= xmax && y >= ymin && y <= ymax;
-                });
-                setHoveredBoxId(hovered ? hovered.box_id : null);
-              }
-            }}
-            onMouseLeave={() => setHoveredBoxId(null)}
-          />
-        )}
+            if (segmentData) {
+              const hovered = segmentData.bounding_boxes.find((b) => {
+                const [ymin, xmin, ymax, xmax] = b.bbox;
+                return x >= xmin && x <= xmax && y >= ymin && y <= ymax;
+              });
+              setHoveredBoxId(hovered ? hovered.box_id : null);
+            }
+          }}
+          onMouseLeave={() => setHoveredBoxId(null)}
+        />
       </div>
 
       {/* Detected Goods Strip */}
@@ -527,11 +476,9 @@ export const SegmentCanvas: React.FC<SegmentCanvasProps> = ({
                     />
                   )}
                   <span>{box.label}</span>
-                  {viewMode === "judge" && (
-                    <span className="text-[10px] font-mono text-[#cab695]">
-                      {(box.confidence * 100).toFixed(0)}%
-                    </span>
-                  )}
+                  <span className="text-[10px] font-mono text-[#cab695]">
+                    {(box.confidence * 100).toFixed(0)}%
+                  </span>
                 </button>
               );
             })}

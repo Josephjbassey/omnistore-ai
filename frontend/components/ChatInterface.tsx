@@ -13,19 +13,11 @@ import {
   Zap,
   StopCircle,
 } from "lucide-react";
-import { ChatMessage, streamAgentChat, SquadRoleInfo } from "@/lib/api";
+import { ChatMessage, streamAgentChat } from "@/lib/api";
 
-interface ChatInterfaceProps {
-  activeRole: string;
-  onSelectRole: (role: string) => void;
-  roles: SquadRoleInfo[];
-}
+interface ChatInterfaceProps {}
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({
-  activeRole,
-  onSelectRole,
-  roles,
-}) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -64,7 +56,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
     const stopFn = await streamAgentChat({
       messages: newHistory,
-      agentRole: activeRole,
+      agentRole: "commander",
       onToken: (token) => {
         currentResponse += token;
         setStreamingDelta(currentResponse);
@@ -111,7 +103,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           {
             role: "assistant",
             content: streamingDelta + " [Stream Interrupted]",
-            agent_role: activeRole,
+            agent_role: "commander",
           },
         ]);
       }
@@ -153,27 +145,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
         <div className="flex items-center space-x-1.5">
           <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800 text-emerald-300">
-            {activeRole.toUpperCase()}
+            COMMANDER
           </span>
         </div>
-      </div>
-
-      {/* Role Switcher Pill Bar */}
-      <div className="flex items-center space-x-1.5 py-2 overflow-x-auto no-scrollbar border-b border-white/[0.05]">
-        {roles.map((r) => (
-          <button
-            key={r.role}
-            onClick={() => onSelectRole(r.role)}
-            className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[10px] font-mono whitespace-nowrap transition-all ${
-              activeRole === r.role
-                ? "bg-emerald-500 text-slate-950 font-bold shadow-sm"
-                : "bg-[#121622] text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            {getRoleIcon(r.role)}
-            <span>{r.name}</span>
-          </button>
-        ))}
       </div>
 
       {/* Message List */}
