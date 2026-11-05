@@ -90,7 +90,8 @@ def init_db() -> None:
                         label            TEXT,
                         area             INTEGER,
                         created_at       TIMESTAMP DEFAULT NOW(),
-                        FOREIGN KEY (store_slug) REFERENCES stores(slug) ON DELETE CASCADE
+                        FOREIGN KEY (store_slug) REFERENCES stores(slug) ON DELETE CASCADE,
+                        UNIQUE (store_slug, item_id)
                     );
                     """
                 )
@@ -129,7 +130,8 @@ def init_db() -> None:
                         label            TEXT,
                         area             INTEGER,
                         created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (store_slug) REFERENCES stores(slug) ON DELETE CASCADE
+                        FOREIGN KEY (store_slug) REFERENCES stores(slug) ON DELETE CASCADE,
+                        UNIQUE (store_slug, item_id)
                 );
 
                 CREATE INDEX IF NOT EXISTS idx_inventory_store ON inventory_items(store_slug);
@@ -285,3 +287,171 @@ def list_stores() -> List[Dict[str, Any]]:
                 "SELECT * FROM stores ORDER BY updated_at DESC"
             ).fetchall()
         return [dict(r) for r in rows]
+
+
+# ─── Individual Inventory Item CRUD ─────────────────────────────────────────
+
+def get_inventory_item(store_slug: str, item_id: str) -> Optional[Dict[str, Any]]:
+    with get_conn() as conn:
+        if USE_POSTGRES:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT * FROM inventory_items WHERE store_slug = %s AND item_id = %s",
+                    (store_slug, item_id),
+                )
+                row = cur.fetchone()
+        else:
+            row = conn.execute(
+                "SELECT * FROM inventory_items WHERE store_slug = ? AND item_id = ?",
+                (store_slug, item_id),
+            ).fetchone()
+        return dict(row) if row else None
+
+
+def upsert_inventory_item(
+    store_slug: str, item: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Create or update a single inventory item. Returns the saved item dict."""
+    item_id = item.get("item_id", "")
+    existing = get_inventory_item(store_slug, item_id)
+
+    if USE_POSTGRES:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                if existing:
+                    cur.execute(
+                        """
+                        UPDATE inventory_items
+                        SET name = %s, category = %s, suggested_price = %s,
+                            estimated_quantity = %s, description = %s,
+                            image_segment_id = %s, image_url = %s,
+                            bbox = %s, confidence = %s, label = %s, area = %s
+                        WHERE store_slug = %s AND item_id = %s
+                        RETURNING id, store_slug, item_id, name, category,
+                                  suggested_price, estimated_quantity, description,
+                                  image_segment_id, image_url, bbox, confidence,
+                                  label, area, created_at
+                        """,
+                        (
+                            item.get("name", ""),
+                            item.get("category", ""),
+                            item.get("suggested_price", 0),
+                            item.get("estimated_quantity", 1),
+                            item.get("description", ""),
+                            item.get("image_segment_id", ""),
+                            item.get("image_url", ""),
+                            json.dumps(item.get("bbox")) if item.get("bbox") else None,
+                            item.get("confidence"),
+                            item.get("label", ""),
+                            item.get("area"),
+                            store_slug,
+                            item_id,
+                        ),
+                    )
+                else:
+                    cur.execute(
+                        """
+                        INSERT INTO inventory_items
+                            (store_slug, item_id, name, category, suggested_price,
+                             estimated_quantity, description, image_segment_id, image_url,
+                             bbox, confidence, label, area)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id, store_slug, item_id, name, category,
+                                  suggested_price, estimated_quantity, description,
+                                  image_segment_id, image_url, bbox, confidence,
+                                  label, area, created_at
+                        """,
+                        (
+                            store_slug,
+                            item_id,
+                            item.get("name", ""),
+                            item.get("category", ""),
+                            item.get("suggested_price", 0),
+                            item.get("estimated_quantity", 1),
+                            item.get("description", ""),
+                            item.get("image_segment_id", ""),
+                            item.get("image_url", ""),
+                            json.dumps(item.get("bbox")) if item.get("bbox") else None,
+                            item.get("confidence"),
+                            item.get("label", ""),
+                            item.get("area"),
+                        ),
+                    )
+                row = cur.fetchone()
+    else:
+        with get_conn() as conn:
+            if existing:
+                conn.execute(
+                    """
+                    UPDATE inventory_items
+                    SET name = ?, category = ?, suggested_price = ?,
+                        estimated_quantity = ?, description = ?,
+                        image_segment_id = ?, image_url = ?,
+                        bbox = ?, confidence = ?, label = ?, area = ?
+                    WHERE store_slug = ? AND item_id = ?
+                    """,
+                    (
+                        item.get("name", ""),
+                        item.get("category", ""),
+                        item.get("suggested_price", 0),
+                        item.get("estimated_quantity", 1),
+                        item.get("description", ""),
+                        item.get("image_segment_id", ""),
+                        item.get("image_url", ""),
+                        json.dumps(item.get("bbox")) if item.get("bbox") else None,
+                        item.get("confidence"),
+                        item.get("label", ""),
+                        item.get("area"),
+                        store_slug,
+                        item_id,
+                    ),
+                )
+            else:
+                conn.execute(
+                    """
+                    INSERT INTO inventory_items
+                        (store_slug, item_id, name, category, suggested_price,
+                         estimated_quantity, description, image_segment_id, image_url,
+                         bbox, confidence, label, area)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        store_slug,
+                        item_id,
+                        item.get("name", ""),
+                        item.get("category", ""),
+                        item.get("suggested_price", 0),
+                        item.get("estimated_quantity", 1),
+                        item.get("description", ""),
+                        item.get("image_segment_id", ""),
+                        item.get("image_url", ""),
+                        json.dumps(item.get("bbox")) if item.get("bbox") else None,
+                        item.get("confidence"),
+                        item.get("label", ""),
+                        item.get("area"),
+                    ),
+                )
+            row = conn.execute(
+                "SELECT * FROM inventory_items WHERE store_slug = ? AND item_id = ?",
+                (store_slug, item_id),
+            ).fetchone()
+    return dict(row)
+
+
+def delete_inventory_item(store_slug: str, item_id: str) -> bool:
+    """Delete a single inventory item. Returns True if a row was deleted."""
+    with get_conn() as conn:
+        if USE_POSTGRES:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM inventory_items WHERE store_slug = %s AND item_id = %s",
+                    (store_slug, item_id),
+                )
+                deleted = cur.rowcount
+        else:
+            cur = conn.execute(
+                "DELETE FROM inventory_items WHERE store_slug = ? AND item_id = ?",
+                (store_slug, item_id),
+            )
+            deleted = cur.rowcount
+    return deleted > 0
