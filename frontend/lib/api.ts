@@ -12,8 +12,10 @@ export const getApiBaseUrl = (): string => {
     return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, "");
   }
   if (typeof window !== "undefined") {
-    return "http://127.0.0.1:8000/api/v1";
+    // Same-origin in production (Vercel deploys frontend + backend API on same domain)
+    return window.location.origin.replace(/\/+$/, "") + "/api/v1";
   }
+  // Build-time fallback (Next.js SSR/build)
   return "http://127.0.0.1:8000/api/v1";
 };
 
